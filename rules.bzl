@@ -67,6 +67,9 @@ def _buildifier(ctx):
     if ctx.attr.lint_mode:
         args.append("-lint=%s" % ctx.attr.lint_mode)
 
+    if ctx.attr.disabled_rewrites:
+        args.append("-buildifier_disable={}".format(",".join(ctx.attr.disabled_rewrites)))
+
     if ctx.attr.lint_warnings:
         if not ctx.attr.lint_mode:
             fail("Cannot pass 'lint_warnings' without a 'lint_mode'")
@@ -114,6 +117,10 @@ buildifier = rule(
         "lint_mode": attr.string(
             doc = "Linting mode",
             values = ["", "warn", "fix"],
+        ),
+        "disabled_rewrites": attr.string_list(
+            allow_empty = True,
+            doc = "buildifier rewrites you want to disable",
         ),
         "lint_warnings": attr.string_list(
             allow_empty = True,
