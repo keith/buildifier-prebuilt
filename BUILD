@@ -4,6 +4,11 @@ load(
     "buildozer_binary",
 )
 
+exports_files(
+    ["runner.bash.template"],
+    visibility = ["//visibility:public"],
+)
+
 toolchain_type(
     name = "toolchain",
     visibility = ["//visibility:public"],
