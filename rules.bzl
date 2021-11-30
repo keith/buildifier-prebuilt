@@ -6,14 +6,10 @@ load("@bazel_skylib//lib:shell.bzl", "shell")
 
 def _buildifier_binary(ctx):
     buildifier = ctx.toolchains["@buildifier_prebuilt//:toolchain"]._buildifier
-    script = ctx.actions.declare_file("buildifier.sh")
-    ctx.actions.write(
-        script,
-        """\
-#!/usr/bin/env bash
-
-exec {buildifier} "$@"
-""".format(buildifier = buildifier.path),
+    script = ctx.actions.declare_file("buildifier")
+    ctx.actions.symlink(
+        output = script,
+        target_file = buildifier,
         is_executable = True,
     )
 
@@ -33,14 +29,10 @@ buildifier_binary = rule(
 
 def _buildozer_binary(ctx):
     buildozer = ctx.toolchains["@buildifier_prebuilt//:toolchain"]._buildozer
-    script = ctx.actions.declare_file("buildozer.sh")
-    ctx.actions.write(
-        script,
-        """\
-#!/usr/bin/env bash
-
-exec {buildozer} "$@"
-""".format(buildozer = buildozer.path),
+    script = ctx.actions.declare_file("buildozer")
+    ctx.actions.symlink(
+        output = script,
+        target_file = buildozer,
         is_executable = True,
     )
 
