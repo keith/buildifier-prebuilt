@@ -13,7 +13,7 @@ def _buildifier_binary(ctx):
 #!/usr/bin/env bash
 
 exec {buildifier} "$@"
-""".format(buildifier = buildifier.short_path),
+""".format(buildifier = buildifier.path),
         is_executable = True,
     )
 
@@ -40,7 +40,7 @@ def _buildozer_binary(ctx):
 #!/usr/bin/env bash
 
 exec {buildozer} "$@"
-""".format(buildozer = buildozer.short_path),
+""".format(buildozer = buildozer.path),
         is_executable = True,
     )
 
