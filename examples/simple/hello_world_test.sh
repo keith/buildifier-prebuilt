@@ -15,4 +15,11 @@ hello_world_sh_location=simple_example/hello_world.sh
 hello_world_sh="$(rlocation "${hello_world_sh_location}")" || \
   (echo >&2 "Failed to locate ${hello_world_sh_location}" && exit 1)
 
-echo >&2 "IMPLEMENT ME!"; exit 1
+
+# MARK - Test
+
+actual="$( "${hello_world_sh}" )"
+[[ "${actual}" == "Hello, World!" ]] || (echo >&2 "Expected default greeting. ${actual}"; exit 1)
+
+actual="$( "${hello_world_sh}" "John" )"
+[[ "${actual}" == "Hello, John!" ]] || (echo >&2 "Expected greeting for John. ${actual}"; exit 1)

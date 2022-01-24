@@ -38,3 +38,35 @@ bzl_library(
         "@bazel_skylib//lib:shell",
     ],
 )
+
+# MARK: - Integration Test
+
+bzl_library(
+    name = "bazel_versions",
+    srcs = ["bazel_versions.bzl"],
+)
+
+filegroup(
+    name = "local_repository_files",
+    srcs = [
+        "BUILD",
+        "WORKSPACE",
+        "defs.bzl",
+        "rules.bzl",
+        "runner.bash.template",
+        "toolchain.bzl",
+    ],
+    visibility = ["//:__subpackages__"],
+)
+
+test_suite(
+    name = "all_integration_tests",
+    tags = [
+        "exclusive",
+        "manual",
+    ],
+    tests = [
+        "//examples:integration_tests",
+    ],
+    visibility = ["//:__subpackages__"],
+)
