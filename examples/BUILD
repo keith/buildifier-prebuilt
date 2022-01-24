@@ -10,7 +10,7 @@ default_test_runner(
     name = "simple_test_runner",
     bazel_cmds = [
         "info",
-        # "run //:buildifier",
+        "run //:buildifier.check",
         "test //...",
     ],
 )
