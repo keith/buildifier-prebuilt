@@ -52,11 +52,10 @@ filegroup(
     srcs = [
         "BUILD",
         "WORKSPACE",
-        "defs.bzl",
-        "rules.bzl",
         "runner.bash.template",
-        "toolchain.bzl",
-    ],
+        "//buildifier:all_files",
+        "//buildozer:all_files",
+    ] + glob(["*.bzl"]),
     visibility = ["//:__subpackages__"],
 )
 

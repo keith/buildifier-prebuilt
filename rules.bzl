@@ -80,7 +80,7 @@ def _buildifier(ctx):
         exclude_patterns = ["\\! -path %s" % shell.quote(pattern) for pattern in ctx.attr.exclude_patterns]
         exclude_patterns_str = " ".join(exclude_patterns)
 
-    buildifier = ctx.toolchains["@buildifier_prebuilt//buildifier:toolchain"]._buildifier
+    buildifier = ctx.toolchains["@buildifier_prebuilt//buildifier:toolchain"]._tool
     out_file = ctx.actions.declare_file(ctx.label.name + ".bash")
     substitutions = {
         "@@ARGS@@": shell.array_literal(args),
