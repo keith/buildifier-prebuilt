@@ -1,0 +1,30 @@
+name: CI for PR Merge
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  macos_build:
+    runs-on: macos-11.0
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ./.github/actions/build_and_test
+
+  ubuntu_build:
+    runs-on: ubuntu-20.04
+    env:
+      CC: clang
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ./.github/actions/build_and_test
+
+  all_ci_tests:
+    runs-on: ubuntu-20.04
+    needs: [macos_build, ubuntu_build]
+    steps:
+      - name: All is Well
+        shell: bash
+        run: |
+          echo "All is well!"
+

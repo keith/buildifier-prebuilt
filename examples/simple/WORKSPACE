@@ -1,0 +1,12 @@
+workspace(name = "simple_example")
+
+local_repository(
+    name = "buildifier_prebuilt",
+    path = "../..",
+)
+
+load("@buildifier_prebuilt//:defs.bzl", "buildifier_prebuilt_deps", "buildifier_prebuilt_register_toolchains")
+
+buildifier_prebuilt_deps()
+
+buildifier_prebuilt_register_toolchains()
