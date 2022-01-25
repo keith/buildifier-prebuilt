@@ -7,7 +7,7 @@ load(
 )
 
 default_test_runner(
-    name = "simple_test_runner",
+    name = "test_runner",
     bazel_cmds = [
         "info",
         "run //:buildifier.check",
@@ -18,11 +18,21 @@ default_test_runner(
 bazel_integration_tests(
     name = "simple_test",
     bazel_versions = SUPPORTED_BAZEL_VERSIONS,
-    test_runner = ":simple_test_runner",
+    test_runner = ":test_runner",
     workspace_files = integration_test_utils.glob_workspace_files("simple") + [
         "//:local_repository_files",
     ],
     workspace_path = "simple",
+)
+
+bazel_integration_tests(
+    name = "specify_assets_test",
+    bazel_versions = SUPPORTED_BAZEL_VERSIONS,
+    test_runner = ":test_runner",
+    workspace_files = integration_test_utils.glob_workspace_files("specify_assets") + [
+        "//:local_repository_files",
+    ],
+    workspace_path = "specify_assets",
 )
 
 test_suite(
@@ -33,8 +43,9 @@ test_suite(
     tests = integration_test_utils.bazel_integration_test_names(
         "simple_test",
         SUPPORTED_BAZEL_VERSIONS,
+    ) + integration_test_utils.bazel_integration_test_names(
+        "specify_assets_test",
+        SUPPORTED_BAZEL_VERSIONS,
     ),
     visibility = ["//:__subpackages__"],
 )
-
-# TODO: Add example specifying the assets to download.

@@ -1,0 +1,41 @@
+workspace(name = "simple_example")
+
+local_repository(
+    name = "buildifier_prebuilt",
+    path = "../..",
+)
+
+load("@buildifier_prebuilt//:deps.bzl", "buildifier_prebuilt_deps")
+
+buildifier_prebuilt_deps()
+
+load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
+
+bazel_skylib_workspace()
+
+load("@buildifier_prebuilt//:defs.bzl", "buildifier_prebuilt_register_toolchains", "buildtools_asset")
+
+BUILDTOOLS_VERSION = "4.2.5"
+
+buildifier_prebuilt_register_toolchains(
+    assets = [
+        buildtools_asset(
+            name = "buildifier",
+            arch = "amd64",
+            platform = "darwin",
+            version = BUILDTOOLS_VERSION,
+        ),
+        buildtools_asset(
+            name = "buildifier",
+            arch = "arm64",
+            platform = "darwin",
+            version = BUILDTOOLS_VERSION,
+        ),
+        buildtools_asset(
+            name = "buildifier",
+            arch = "amd64",
+            platform = "linux",
+            version = BUILDTOOLS_VERSION,
+        ),
+    ],
+)
