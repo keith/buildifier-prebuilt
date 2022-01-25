@@ -9,6 +9,19 @@ load("//:buildtools.bzl", "buildtools")
 def _buildifier_toolchain_setup_impl(repository_ctx):
     content = 'load("@buildifier_prebuilt//:toolchain.bzl", "declare_toolchain")'
 
+    # for platform, arch, _, _ in _BINARIES:
+    #     name = "{}_{}".format(platform, arch)
+    #     content += """
+    # declare_toolchain(
+    # name = "{name}",
+    # buildifier = "@buildifier_{platform}_{arch}//file:buildifier",
+    # buildozer = "@buildozer_{platform}_{arch}//file:buildozer",
+    # os = "{platform}",
+    # arch = "{arch}",
+    # )
+
+    # """.format(name = name, platform = platform, arch = arch)
+
     for platform, arch, _, _ in _BINARIES:
         name = "{}_{}".format(platform, arch)
         content += """
