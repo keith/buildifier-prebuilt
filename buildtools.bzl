@@ -18,6 +18,14 @@ def _create_asset(name, platform, arch, version, sha256 = None):
     Returns:
         A `struct` representing the asset to be downloaded.
     """
+    if name == None:
+        fail("Expected a name.")
+    if platform == None:
+        fail("Expected a platform.")
+    if arch == None:
+        fail("Expected an arch.")
+    if version == None:
+        fail("Expected a version.")
     if not sets.contains(_VALID_ASSET_NAMES, name):
         fail("Invalid asset name. {name}".format(name = name))
 

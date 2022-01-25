@@ -6,52 +6,6 @@ load("@bazel_skylib//lib:shell.bzl", "shell")
 load("//buildifier:buildifier_binary.bzl", _buildifier_binary = "buildifier_binary")
 load("//buildozer:buildozer_binary.bzl", _buildozer_binary = "buildozer_binary")
 
-# def _buildifier_binary(ctx):
-#     buildifier = ctx.toolchains["@buildifier_prebuilt//:toolchain"]._buildifier
-#     script = ctx.actions.declare_file("buildifier")
-#     ctx.actions.symlink(
-#         output = script,
-#         target_file = buildifier,
-#         is_executable = True,
-#     )
-
-#     return [
-#         DefaultInfo(
-#             runfiles = ctx.runfiles(files = [buildifier]),
-#             executable = script,
-#         ),
-#     ]
-
-# buildifier_binary = rule(
-#     implementation = _buildifier_binary,
-#     attrs = {},
-#     toolchains = ["@buildifier_prebuilt//:toolchain"],
-#     executable = True,
-# )
-
-# def _buildozer_binary(ctx):
-#     buildozer = ctx.toolchains["@buildifier_prebuilt//:toolchain"]._buildozer
-#     script = ctx.actions.declare_file("buildozer")
-#     ctx.actions.symlink(
-#         output = script,
-#         target_file = buildozer,
-#         is_executable = True,
-#     )
-
-#     return [
-#         DefaultInfo(
-#             runfiles = ctx.runfiles(files = [buildozer]),
-#             executable = script,
-#         ),
-#     ]
-
-# buildozer_binary = rule(
-#     implementation = _buildozer_binary,
-#     attrs = {},
-#     toolchains = ["@buildifier_prebuilt//:toolchain"],
-#     executable = True,
-# )
-
 buildifier_binary = _buildifier_binary
 buildozer_binary = _buildozer_binary
 

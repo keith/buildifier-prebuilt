@@ -36,3 +36,5 @@ test_suite(
     ),
     visibility = ["//:__subpackages__"],
 )
+
+# TODO: Add example specifying the assets to download.
