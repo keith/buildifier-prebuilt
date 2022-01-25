@@ -1,27 +1,7 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load(
-    "@buildifier_prebuilt//:rules.bzl",
-    "buildifier_binary",
-    "buildozer_binary",
-)
 
 exports_files(
     ["runner.bash.template"],
-    visibility = ["//visibility:public"],
-)
-
-toolchain_type(
-    name = "toolchain",
-    visibility = ["//visibility:public"],
-)
-
-buildifier_binary(
-    name = "buildifier",
-    visibility = ["//visibility:public"],
-)
-
-buildozer_binary(
-    name = "buildozer",
     visibility = ["//visibility:public"],
 )
 
@@ -29,11 +9,21 @@ bzl_library(
     name = "defs",
     srcs = ["defs.bzl"],
     visibility = ["//visibility:public"],
+    deps = [
+        ":buildtools",
+    ],
+)
+
+bzl_library(
+    name = "deps",
+    srcs = ["deps.bzl"],
+    visibility = ["//visibility:public"],
 )
 
 bzl_library(
     name = "rules",
     srcs = ["rules.bzl"],
+    visibility = ["//:__subpackages__"],
     deps = [
         "@bazel_skylib//lib:shell",
     ],
@@ -42,8 +32,10 @@ bzl_library(
 bzl_library(
     name = "buildtools",
     srcs = ["buildtools.bzl"],
+    visibility = ["//:__subpackages__"],
     deps = [
         "@bazel_skylib//lib:new_sets",
+        "@bazel_skylib//lib:types",
     ],
 )
 
@@ -52,6 +44,7 @@ bzl_library(
 bzl_library(
     name = "bazel_versions",
     srcs = ["bazel_versions.bzl"],
+    visibility = ["//:__subpackages__"],
 )
 
 filegroup(

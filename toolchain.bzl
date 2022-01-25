@@ -2,36 +2,30 @@
 Toolchain setup boilerplate
 """
 
+load("//:buildtools.bzl", "buildtools")
+
 def _buildifier_toolchain(ctx):
     return [
         platform_common.ToolchainInfo(
-            _buildifier = ctx.executable.buildifier,
-            _buildozer = ctx.executable.buildozer,
+            _tool = ctx.executable.tool,
         ),
     ]
 
-buildifier_toolchain = rule(
+prebuilt_toolchain = rule(
     _buildifier_toolchain,
     attrs = {
-        "buildifier": attr.label(
+        "tool": attr.label(
             allow_single_file = True,
             mandatory = True,
             cfg = "exec",
             executable = True,
-            doc = "Buildifier executable",
-        ),
-        "buildozer": attr.label(
-            allow_single_file = True,
-            mandatory = True,
-            cfg = "exec",
-            executable = True,
-            doc = "Buildozer executable",
+            doc = "Buildtools executable",
         ),
     },
     provides = [platform_common.ToolchainInfo],
 )
 
-def declare_toolchain(name, buildifier, buildozer, os, arch):
+def declare_toolchain(tool_name, tool, os, arch):
     """Create the custom and native toolchain for a platform
 
     Args:
@@ -41,10 +35,11 @@ def declare_toolchain(name, buildifier, buildozer, os, arch):
         os: The OS the toolchain is compatible with
         arch: The arch the toolchain is compatible with
     """
-    buildifier_toolchain(
+
+    name = buildtools.create_unique_name(name = tool_name, platform = os, arch = arch)
+    prebuilt_toolchain(
         name = name,
-        buildifier = buildifier,
-        buildozer = buildozer,
+        tool = tool,
     )
 
     if os == "darwin":
@@ -54,7 +49,9 @@ def declare_toolchain(name, buildifier, buildozer, os, arch):
 
     native.toolchain(
         name = name + "_toolchain",
-        toolchain_type = "@buildifier_prebuilt//:toolchain",
+        toolchain_type = "@buildifier_prebuilt//{tool}:toolchain".format(
+            tool = tool_name,
+        ),
         exec_compatible_with = [
             "@platforms//os:{}".format(os),
             "@platforms//cpu:{}".format(arch),

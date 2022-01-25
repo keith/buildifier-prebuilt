@@ -5,6 +5,7 @@ build_test(
     name = "build_test",
     targets = [
         "//:defs",
+        "//:deps",
         "//:rules",
         "//:buildtools",
         "//:bazel_versions",

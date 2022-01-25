@@ -1,6 +1,7 @@
 load("@bazel_skylib//lib:new_sets.bzl", "sets")
+load("@bazel_skylib//lib:types.bzl", "types")
 
-_VALID_ASSET_NAMES = sets.make("buildifier", "buildozer")
+_VALID_ASSET_NAMES = sets.make(["buildifier", "buildozer"])
 
 def _create_asset(name, platform, arch, version, sha256 = None):
     """Create a `struct` representing a buildtools asset.
@@ -28,6 +29,31 @@ def _create_asset(name, platform, arch, version, sha256 = None):
         sha256 = sha256,
     )
 
+def _create_unique_name(asset = None, name = None, platform = None, arch = None):
+    if asset != None:
+        name = asset.name
+        platform = asset.platform
+        arch = asset.arch
+    if name == None or platform == None or arch == None:
+        fail("An asset or name/platform/arch must be specified.")
+
+    return "{name}_{platform}_{arch}".format(
+        name = name,
+        platform = platform,
+        arch = arch,
+    )
+
+def _asset_to_json(asset):
+    return json.encode(asset)
+
+def _asset_from_json(json_str):
+    result = json.decode(json_str)
+    if types.is_list(result):
+        return [_create_asset(**a) for a in result]
+    elif types.is_dict(result):
+        return _create_asset(**result)
+    fail("Unexpected result type decoding JSON string. %s" % (json_str))
+
 _DEFAULT_ASSETS = [
     _create_asset("buildifier", "darwin", "amd64", "4.2.3", "954ec397089344b1564e45dc095e9331e121eb0f20e72032fcc8e94de78e5663"),
     _create_asset("buildozer", "darwin", "amd64", "4.2.3", "edcabae1d97bdc42559d7d1d65dfe7f8970db8d95d4bc9e7bf6656a9f2fb5592"),
@@ -39,5 +65,8 @@ _DEFAULT_ASSETS = [
 
 buildtools = struct(
     create_asset = _create_asset,
+    create_unique_name = _create_unique_name,
+    asset_to_json = _asset_to_json,
+    asset_from_json = _asset_from_json,
     DEFAULT_ASSETS = _DEFAULT_ASSETS,
 )
