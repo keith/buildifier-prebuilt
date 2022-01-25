@@ -39,6 +39,14 @@ bzl_library(
     ],
 )
 
+bzl_library(
+    name = "buildtools",
+    srcs = ["buildtools.bzl"],
+    deps = [
+        "@bazel_skylib//lib:new_sets",
+    ],
+)
+
 # MARK: - Integration Test
 
 bzl_library(
