@@ -38,6 +38,17 @@ def _create_asset(name, platform, arch, version, sha256 = None):
     )
 
 def _create_unique_name(asset = None, name = None, platform = None, arch = None):
+    """Create a unique name from an asset or from a name/platform/arch.
+
+    Args:
+        asset: An asset `struct` as returned by `buildtools.create_asset`.
+        name: A tool name (e.g. buildifier) as `string`.
+        platform: A platform as `string`.
+        arch: An arch as `string`.
+
+    Returns:
+        A `string` suitable for use as identifying an asset.
+    """
     if asset != None:
         name = asset.name
         platform = asset.platform
@@ -52,9 +63,25 @@ def _create_unique_name(asset = None, name = None, platform = None, arch = None)
     )
 
 def _asset_to_json(asset):
+    """Returns the JSON representation for an asset `struct` or a `list` of asset `struct` values.
+
+    Args:
+        asset: An asset `struct` as returned by `buildtools.create_asset`.
+
+    Returns:
+        Returns a JSON `string` representation of the provided value.
+    """
     return json.encode(asset)
 
 def _asset_from_json(json_str):
+    """Returns an asset `struct` or a `list` of asset `struct` values as represented by the JSON `string`.
+
+    Args:
+        json_str: A JSON `string` representing an asset or a list of assets.
+
+    Returns:
+        An asset `struct` or a `list` of asset `struct` values.
+    """
     result = json.decode(json_str)
     if types.is_list(result):
         return [_create_asset(**a) for a in result]
