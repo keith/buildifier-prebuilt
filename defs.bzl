@@ -14,13 +14,13 @@ def _buildifier_toolchain_setup_impl(repository_ctx):
         content += """
 declare_toolchain(
     tool_name = "{tool_name}",
-    tool = "@buildifier_{platform}_{arch}//file:{tool_name}",
+    tool = "@{uniq_name}//file:{tool_name}",
     os = "{platform}",
     arch = "{arch}",
 )
 
 """.format(
-            # uniq_name = buildtools.create_unique_name(asset),
+            uniq_name = buildtools.create_unique_name(asset),
             tool_name = asset.name,
             platform = asset.platform,
             arch = asset.arch,
