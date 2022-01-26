@@ -92,7 +92,7 @@ def _asset_from_json(json_str):
         return _create_asset(**result)
     fail("Unexpected result type decoding JSON string. %s" % (json_str))
 
-def _create_assets(version, names = _TOOL_NAMES, platforms = _TYPICAL_PLATFORMS, arches = _TYPICAL_ARCHES):
+def _create_assets(version, names = _TOOL_NAMES, platforms = _TYPICAL_PLATFORMS, arches = _TYPICAL_ARCHES, sha256_values = {}):
     """Create a `list` of asset `struct` values.
 
     Args:
@@ -104,6 +104,17 @@ def _create_assets(version, names = _TOOL_NAMES, platforms = _TYPICAL_PLATFORMS,
     Returns:
         A `list` of buildtools assets.
     """
+    if version == None:
+        fail("Expected a version.")
+    if names == None or names == []:
+        fail("Expected a non-empty list for names.")
+    if platforms == None or platforms == []:
+        fail("Expected a non-empty list for platforms.")
+    if arches == None or arches == []:
+        fail("Expected a non-empty list for arches.")
+    if sha256_values == None:
+        sha256_values = {}
+
     assets = []
     for name in names:
         for platform in platforms:
