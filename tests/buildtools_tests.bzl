@@ -139,6 +139,28 @@ def _create_assets_test(ctx):
     arches = sets.make([asset.arch for asset in assets])
     asserts.true(env, sets.is_equal(arches, sets.make(["amd64"])))
 
+    # Test with sha256 values
+    assets = buildtools.create_assets(version = "4.2.3", sha256_values = {
+        "buildifier_darwin_amd64": "954ec397089344b1564e45dc095e9331e121eb0f20e72032fcc8e94de78e5663",
+        "buildozer_darwin_amd64": "edcabae1d97bdc42559d7d1d65dfe7f8970db8d95d4bc9e7bf6656a9f2fb5592",
+        "buildifier_darwin_arm64": "9434043897a3c3821fda87046918e5a6c4320d8352df700f62046744c4d168a3",
+        "buildozer_darwin_arm64": "f8d0994620dec1247328f13db1d434b6489dd007f8e9b961dbd9363bc6fe7071",
+        "buildifier_linux_amd64": "a19126536bae9a3917a7fc4bdbbf0378371a1d1683ab2415857cf53bce9dee49",
+        "buildozer_linux_amd64": "6b4177321b770fb788b618caa453d34561b8c05081ae8b27657e527c2a3b5d52",
+    })
+    target = None
+    for asset in assets:
+        if asset.name == "buildifier" and asset.platform == "darwin" and asset.arch == "amd64":
+            target = asset
+            break
+    asserts.equals(env, "954ec397089344b1564e45dc095e9331e121eb0f20e72032fcc8e94de78e5663", target.sha256)
+    target = None
+    for asset in assets:
+        if asset.name == "buildozer" and asset.platform == "linux" and asset.arch == "amd64":
+            target = asset
+            break
+    asserts.equals(env, "6b4177321b770fb788b618caa453d34561b8c05081ae8b27657e527c2a3b5d52", target.sha256)
+
     return unittest.end(env)
 
 create_assets_test = unittest.make(_create_assets_test)
