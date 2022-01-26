@@ -73,3 +73,4 @@ def buildifier_prebuilt_register_toolchains(name = "buildifier_prebuilt_toolchai
     native.register_toolchains(*toolchain_names)
 
 buildtools_asset = buildtools.create_asset
+buildtools_assets = buildtools.create_assets

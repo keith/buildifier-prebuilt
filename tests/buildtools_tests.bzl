@@ -87,10 +87,20 @@ def _asset_json_roundtrip_test(ctx):
 
 asset_json_roundtrip_test = unittest.make(_asset_json_roundtrip_test)
 
+def _create_assets_test(ctx):
+    env = unittest.begin(ctx)
+
+    unittest.fail(env, "IMPLEMENT ME!")
+
+    return unittest.end(env)
+
+create_assets_test = unittest.make(_create_assets_test)
+
 def buildtools_test_suite():
     return unittest.suite(
         "buildtools_tests",
         create_asset_test,
         default_assets_test,
         asset_json_roundtrip_test,
+        create_assets_test,
     )
