@@ -42,6 +42,26 @@ def _create_asset_test(ctx):
 
 create_asset_test = unittest.make(_create_asset_test)
 
+def _create_unique_name_test(ctx):
+    env = unittest.begin(ctx)
+
+    asset = buildtools.create_asset(
+        name = "buildifier",
+        platform = "linux",
+        arch = "amd64",
+        version = "1.2.3",
+        sha256 = "954ec397089344b1564e45dc095e9331e121eb0f20e72032fcc8e94de78e5663",
+    )
+    actual = buildtools.create_unique_name(asset)
+    asserts.equals(env, "buildifier_linux_amd64", actual)
+
+    actual = buildtools.create_unique_name(name = "buildifier", platform = "linux", arch = "amd64")
+    asserts.equals(env, "buildifier_linux_amd64", actual)
+
+    return unittest.end(env)
+
+create_unique_name_test = unittest.make(_create_unique_name_test)
+
 def _default_assets_test(ctx):
     env = unittest.begin(ctx)
 
@@ -169,6 +189,7 @@ def buildtools_test_suite():
     return unittest.suite(
         "buildtools_tests",
         create_asset_test,
+        create_unique_name_test,
         default_assets_test,
         asset_json_roundtrip_test,
         create_assets_test,
