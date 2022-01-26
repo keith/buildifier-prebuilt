@@ -1,4 +1,5 @@
 load("@bazel_skylib//lib:unittest.bzl", "asserts", "unittest")
+load("@bazel_skylib//lib:new_sets.bzl", "sets")
 load("//:buildtools.bzl", "buildtools")
 
 def _create_asset_test(ctx):
@@ -90,7 +91,53 @@ asset_json_roundtrip_test = unittest.make(_asset_json_roundtrip_test)
 def _create_assets_test(ctx):
     env = unittest.begin(ctx)
 
-    unittest.fail(env, "IMPLEMENT ME!")
+    # Test use defaults
+    assets = buildtools.create_assets(version = "4.2.5")
+    asserts.equals(env, 8, len(assets))
+    versions = sets.make([asset.version for asset in assets])
+    asserts.true(env, sets.is_equal(versions, sets.make(["4.2.5"])))
+    names = sets.make([asset.name for asset in assets])
+    asserts.true(env, sets.is_equal(names, sets.make(["buildifier", "buildozer"])))
+    platforms = sets.make([asset.platform for asset in assets])
+    asserts.true(env, sets.is_equal(platforms, sets.make(["darwin", "linux"])))
+    arches = sets.make([asset.arch for asset in assets])
+    asserts.true(env, sets.is_equal(arches, sets.make(["amd64", "arm64"])))
+
+    # Test with custom names
+    assets = buildtools.create_assets(version = "4.2.5", names = ["buildifier"])
+    asserts.equals(env, 4, len(assets))
+    versions = sets.make([asset.version for asset in assets])
+    asserts.true(env, sets.is_equal(versions, sets.make(["4.2.5"])))
+    names = sets.make([asset.name for asset in assets])
+    asserts.true(env, sets.is_equal(names, sets.make(["buildifier"])))
+    platforms = sets.make([asset.platform for asset in assets])
+    asserts.true(env, sets.is_equal(platforms, sets.make(["darwin", "linux"])))
+    arches = sets.make([asset.arch for asset in assets])
+    asserts.true(env, sets.is_equal(arches, sets.make(["amd64", "arm64"])))
+
+    # Test with custom platforms
+    assets = buildtools.create_assets(version = "4.2.5", platforms = ["linux"])
+    asserts.equals(env, 4, len(assets))
+    versions = sets.make([asset.version for asset in assets])
+    asserts.true(env, sets.is_equal(versions, sets.make(["4.2.5"])))
+    names = sets.make([asset.name for asset in assets])
+    asserts.true(env, sets.is_equal(names, sets.make(["buildifier", "buildozer"])))
+    platforms = sets.make([asset.platform for asset in assets])
+    asserts.true(env, sets.is_equal(platforms, sets.make(["linux"])))
+    arches = sets.make([asset.arch for asset in assets])
+    asserts.true(env, sets.is_equal(arches, sets.make(["amd64", "arm64"])))
+
+    # Test with custom arches
+    assets = buildtools.create_assets(version = "4.2.5", arches = ["amd64"])
+    asserts.equals(env, 4, len(assets))
+    versions = sets.make([asset.version for asset in assets])
+    asserts.true(env, sets.is_equal(versions, sets.make(["4.2.5"])))
+    names = sets.make([asset.name for asset in assets])
+    asserts.true(env, sets.is_equal(names, sets.make(["buildifier", "buildozer"])))
+    platforms = sets.make([asset.platform for asset in assets])
+    asserts.true(env, sets.is_equal(platforms, sets.make(["darwin", "linux"])))
+    arches = sets.make([asset.arch for asset in assets])
+    asserts.true(env, sets.is_equal(arches, sets.make(["amd64"])))
 
     return unittest.end(env)
 
