@@ -11,7 +11,7 @@ source "${RUNFILES_DIR:-/dev/null}/$f" 2>/dev/null || \
   { echo>&2 "ERROR: cannot find $f"; exit 1; }; f=; set -e
 # --- end runfiles.bash initialization v2 ---
 
-hello_world_sh_location=simple_example/hello_world.sh
+hello_world_sh_location="${TEST_WORKSPACE}/hello_world.sh"
 hello_world_sh="$(rlocation "${hello_world_sh_location}")" || \
   (echo >&2 "Failed to locate ${hello_world_sh_location}" && exit 1)
 

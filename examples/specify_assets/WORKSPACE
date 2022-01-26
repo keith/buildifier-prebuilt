@@ -1,4 +1,4 @@
-workspace(name = "simple_example")
+workspace(name = "specify_assets_example")
 
 local_repository(
     name = "buildifier_prebuilt",
