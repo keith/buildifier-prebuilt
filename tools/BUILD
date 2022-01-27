@@ -4,6 +4,7 @@ sh_binary(
     visibility = ["//visibility:public"],
     deps = [
         "@bazel_tools//tools/bash/runfiles",
+        "@cgrindel_bazel_starlib//shlib/lib:env",
         "@cgrindel_bazel_starlib//shlib/lib:fail",
     ],
 )
