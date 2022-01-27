@@ -36,7 +36,7 @@ is_installed shasum || fail "Could not find shasum."
 get_usage() {
   local utility="$(basename "${BASH_SOURCE[0]}")"
   echo "$(cat <<-EOF
-Execute a Github Action workflow to create a relase with the specified tag.
+Generates an assets declaration suitable for inclusion in a WORKSPACE file.
 
 Usage:
 ${utility} [OPTION] [<tag>]
@@ -49,12 +49,20 @@ EOF
 
 # MARK - Process Args
 
+tools=(buildifier buildozer)
+platforms=(darwin linux)
+arches=(amd64 arm64)
+
 args=()
 while (("$#")); do
   case "${1}" in
     "--help")
       show_usage
       exit 0
+      ;;
+    "--tool")
+      tools+=( "${2}" )
+      shift 2
       ;;
     *)
       args+=("${1}")
@@ -64,6 +72,7 @@ while (("$#")); do
 done
 
 [[ ${#args[@]} > 0 ]] && release_tag="${args[0]}"
+
 
 # MARK - Query for buildtool release info
 
@@ -89,12 +98,14 @@ trap cleanup EXIT
 
 # Download the assets and generate the sums.
 echo "Downloading the assets for ${release_tag}."
+asset_regex='^('"$( IFS='|'; echo "${tools[*]}" )"')-'
 asset_sha256_values=()
 assets=( $(echo "${release_query_result}" | jq -r -c '.assets[] | @base64') )
 for asset_base64_json in "${assets[@]}" ; do
   asset_json="$( echo ${asset_base64_json} | base64 --decode )"
   asset_name="$( echo "${asset_json}" | jq -r '.name' )"
-  [[ "${asset_name}" =~ ^(buildifier|buildozer)- ]] || continue
+  # [[ "${asset_name}" =~ ^(buildifier|buildozer)- ]] || continue
+  [[ "${asset_name}" =~ ${asset_regex} ]] || continue
 
   # Download the asset
   echo >&2 "Downloading ${asset_name}..."
