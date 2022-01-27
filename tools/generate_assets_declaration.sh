@@ -31,6 +31,16 @@ is_installed jq || fail "Could not find jq for JSON parsing."
 is_installed shasum || fail "Could not find shasum."
 
 
+# MARK - Functions
+
+to_delim_str() {
+  local delimiter="${1}"
+  shift 1
+  printf -v joined '%s'"${delimiter}" "${@}"
+  echo "${joined%${delimiter}}"
+}
+
+
 # MARK - Usage
 
 get_usage() {
@@ -60,8 +70,28 @@ while (("$#")); do
       show_usage
       exit 0
       ;;
+    "--reset_tools")
+      tools=()
+      shift 1
+      ;;
     "--tool")
       tools+=( "${2}" )
+      shift 2
+      ;;
+    "--reset_platforms")
+      platforms=()
+      shift 1
+      ;;
+    "--platform")
+      platforms+=( "${2}" )
+      shift 2
+      ;;
+    "--reset_arches")
+      arches=()
+      shift 1
+      ;;
+    "--arch")
+      arches+=( "${2}" )
       shift 2
       ;;
     *)
@@ -96,15 +126,23 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# Download the assets and generate the sums.
-echo "Downloading the assets for ${release_tag}."
+# Output
+echo >&2 "Release Tag: ${release_tag}"
+echo >&2 "Tools: $( to_delim_str ", " "${tools[@]}" )"
+echo >&2 "Platforms: $( to_delim_str ", " "${platforms[@]}" )"
+echo >&2 "Arches: $( to_delim_str ", " "${arches[@]}" )"
+
+# Prepare asset filter regex
 asset_regex='^('"$( IFS='|'; echo "${tools[*]}" )"')-'
+asset_regex+='('"$( IFS='|'; echo "${platforms[*]}" )"')-'
+asset_regex+='('"$( IFS='|'; echo "${arches[*]}" )"')'
+
+# Download the assets and generate the sums.
 asset_sha256_values=()
 assets=( $(echo "${release_query_result}" | jq -r -c '.assets[] | @base64') )
 for asset_base64_json in "${assets[@]}" ; do
   asset_json="$( echo ${asset_base64_json} | base64 --decode )"
   asset_name="$( echo "${asset_json}" | jq -r '.name' )"
-  # [[ "${asset_name}" =~ ^(buildifier|buildozer)- ]] || continue
   [[ "${asset_name}" =~ ${asset_regex} ]] || continue
 
   # Download the asset
@@ -123,7 +161,8 @@ for asset_base64_json in "${assets[@]}" ; do
 done
 
 # Combine the entries into a newline delimited string
-asset_sha256_values_str="$( IFS=$'\n'; echo "${asset_sha256_values[*]}" )"
+# asset_sha256_values_str="$( IFS=$'\n'; echo "${asset_sha256_values[*]}" )"
+asset_sha256_values_str="$( to_delim_str $'\n' "${asset_sha256_values[@]}" )"
 
 # Create the declaration
 assets_declaration="$(cat <<-EOF
