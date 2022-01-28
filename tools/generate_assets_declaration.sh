@@ -40,6 +40,15 @@ to_delim_str() {
   echo "${joined%${delimiter}}"
 }
 
+quote_items() {
+  items=()
+  while (("$#")); do
+    items+=( "\"${1}\"" )
+    shift 1
+  done 
+  echo "${items[@]}"
+}
+
 
 # MARK - Usage
 
@@ -157,12 +166,20 @@ for asset_base64_json in "${assets[@]}" ; do
 
   # Create the sha256_values entry; the '%.*' in asset_name expansion will strip the extension for the file.
   asset_key="$( echo "${asset_name%.*}" | sed -E -e 's/[-.]/_/g'  )"
-  asset_sha256_values+=( "            \"${asset_key}\": \"${asset_sha256}\"" )
+  asset_sha256_values+=( "            \"${asset_key}\": \"${asset_sha256}\"," )
 done
 
 # Combine the entries into a newline delimited string
-# asset_sha256_values_str="$( IFS=$'\n'; echo "${asset_sha256_values[*]}" )"
 asset_sha256_values_str="$( to_delim_str $'\n' "${asset_sha256_values[@]}" )"
+
+# Create comma separated list
+# quoted_tools=( $(quote_items "${tools[@]}") )
+# tools_str="$( to_delim_str ", " "${quoted_tools[@]}" )"
+tools_str="$( to_delim_str ", " $(quote_items "${tools[@]}") )"
+platforms_str="$( to_delim_str ", " $(quote_items "${platforms[@]}") )"
+arches_str="$( to_delim_str ", " $(quote_items "${arches[@]}") )"
+# platforms_str="$( to_delim_str ", " "\"${platforms[@]}\"" )"
+# arches_str="$( to_delim_str ", " "\"${arches[@]}\"" )"
 
 # Create the declaration
 assets_declaration="$(cat <<-EOF
@@ -170,10 +187,13 @@ load("@buildifier_prebuilt//:defs.bzl", "buildifier_prebuilt_register_toolchains
 
 buildifier_prebuilt_register_toolchains(
     assets = buildtools_assets(
+        version = "${release_tag}",
+        names = [${tools_str}],
+        platforms = [${platforms_str}],
+        arches = [${arches_str}],
         sha256_values = {
 ${asset_sha256_values_str}
         },
-        version = "${release_tag}",
     ),
 )
 EOF
