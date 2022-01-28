@@ -35,25 +35,6 @@ is_installed jq || fail "Could not find jq for JSON parsing."
 is_installed shasum || fail "Could not find shasum."
 
 
-# MARK - Functions
-
-# join_by() {
-#   local delimiter="${1}"
-#   shift 1
-#   printf -v joined '%s'"${delimiter}" "${@}"
-#   echo "${joined%${delimiter}}"
-# }
-
-# quote_items() {
-#   items=()
-#   while (("$#")); do
-#     items+=( "\"${1}\"" )
-#     shift 1
-#   done 
-#   echo "${items[@]}"
-# }
-
-
 # MARK - Usage
 
 get_usage() {
@@ -177,13 +158,9 @@ done
 asset_sha256_values_str="$( join_by $'\n' "${asset_sha256_values[@]}" )"
 
 # Create comma separated list
-# quoted_tools=( $(quote_items "${tools[@]}") )
-# tools_str="$( to_delim_str ", " "${quoted_tools[@]}" )"
 tools_str="$( join_by ", " $(double_quote_items "${tools[@]}") )"
 platforms_str="$( join_by ", " $(double_quote_items "${platforms[@]}") )"
 arches_str="$( join_by ", " $(double_quote_items "${arches[@]}") )"
-# platforms_str="$( to_delim_str ", " "\"${platforms[@]}\"" )"
-# arches_str="$( to_delim_str ", " "\"${arches[@]}\"" )"
 
 # Create the declaration
 assets_declaration="$(cat <<-EOF
