@@ -23,6 +23,10 @@ env_sh="$(rlocation "${env_sh_location}")" || \
   (echo >&2 "Failed to locate ${env_sh_location}" && exit 1)
 source "${env_sh}"
 
+arrays_sh_location=cgrindel_bazel_starlib/shlib/lib/arrays.sh
+arrays_sh="$(rlocation "${arrays_sh_location}")" || \
+  (echo >&2 "Failed to locate ${arrays_sh_location}" && exit 1)
+source "${arrays_sh}"
 
 # MARK - Check for Required Software
 
@@ -33,21 +37,21 @@ is_installed shasum || fail "Could not find shasum."
 
 # MARK - Functions
 
-to_delim_str() {
-  local delimiter="${1}"
-  shift 1
-  printf -v joined '%s'"${delimiter}" "${@}"
-  echo "${joined%${delimiter}}"
-}
+# join_by() {
+#   local delimiter="${1}"
+#   shift 1
+#   printf -v joined '%s'"${delimiter}" "${@}"
+#   echo "${joined%${delimiter}}"
+# }
 
-quote_items() {
-  items=()
-  while (("$#")); do
-    items+=( "\"${1}\"" )
-    shift 1
-  done 
-  echo "${items[@]}"
-}
+# quote_items() {
+#   items=()
+#   while (("$#")); do
+#     items+=( "\"${1}\"" )
+#     shift 1
+#   done 
+#   echo "${items[@]}"
+# }
 
 
 # MARK - Usage
@@ -137,9 +141,9 @@ trap cleanup EXIT
 
 # Output
 echo >&2 "Release Tag: ${release_tag}"
-echo >&2 "Tools: $( to_delim_str ", " "${tools[@]}" )"
-echo >&2 "Platforms: $( to_delim_str ", " "${platforms[@]}" )"
-echo >&2 "Arches: $( to_delim_str ", " "${arches[@]}" )"
+echo >&2 "Tools: $( join_by ", " "${tools[@]}" )"
+echo >&2 "Platforms: $( join_by ", " "${platforms[@]}" )"
+echo >&2 "Arches: $( join_by ", " "${arches[@]}" )"
 
 # Prepare asset filter regex
 asset_regex='^('"$( IFS='|'; echo "${tools[*]}" )"')-'
@@ -170,14 +174,14 @@ for asset_base64_json in "${assets[@]}" ; do
 done
 
 # Combine the entries into a newline delimited string
-asset_sha256_values_str="$( to_delim_str $'\n' "${asset_sha256_values[@]}" )"
+asset_sha256_values_str="$( join_by $'\n' "${asset_sha256_values[@]}" )"
 
 # Create comma separated list
 # quoted_tools=( $(quote_items "${tools[@]}") )
 # tools_str="$( to_delim_str ", " "${quoted_tools[@]}" )"
-tools_str="$( to_delim_str ", " $(quote_items "${tools[@]}") )"
-platforms_str="$( to_delim_str ", " $(quote_items "${platforms[@]}") )"
-arches_str="$( to_delim_str ", " $(quote_items "${arches[@]}") )"
+tools_str="$( join_by ", " $(double_quote_items "${tools[@]}") )"
+platforms_str="$( join_by ", " $(double_quote_items "${platforms[@]}") )"
+arches_str="$( join_by ", " $(double_quote_items "${arches[@]}") )"
 # platforms_str="$( to_delim_str ", " "\"${platforms[@]}\"" )"
 # arches_str="$( to_delim_str ", " "\"${arches[@]}\"" )"
 
