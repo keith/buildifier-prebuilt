@@ -12,20 +12,12 @@ def buildifier_prebuilt_deps():
         sha256 = "c6966ec828da198c5d9adbaa94c05e3a1c7f21bd012a0b29ba8ddbccb2c93b0d",
     )
 
-    # TODO: FIX ME
-
     maybe(
-        native.local_repository,
+        http_archive,
         name = "cgrindel_bazel_starlib",
-        path = "/Users/chuck/code/cgrindel/bazel-starlib",
+        sha256 = "fc2ee0fce914e3aee1a6af460d4ba1eed9d82e8125294d14e7d3f236d4a10a5d",
+        strip_prefix = "bazel-starlib-0.3.2",
+        urls = [
+            "http://github.com/cgrindel/bazel-starlib/archive/v0.3.2.tar.gz",
+        ],
     )
-
-#     maybe(
-#         http_archive,
-#         name = "cgrindel_bazel_starlib",
-#         sha256 = "9e054e423bb7674e02052e52725b41288369dd94efff963479f76fe269b5177f",
-#         strip_prefix = "bazel-starlib-0.3.1",
-#         urls = [
-#             "http://github.com/cgrindel/bazel-starlib/archive/v0.3.1.tar.gz",
-#         ],
-#     )
