@@ -65,6 +65,7 @@ EOF
 
 # MARK - Process Args
 
+verbose=false
 tools=(buildifier buildozer)
 platforms=(darwin linux)
 arches=(amd64 arm64)
@@ -75,6 +76,10 @@ while (("$#")); do
     "--help")
       show_usage
       exit 0
+      ;;
+    "--verbose")
+      verbose=true
+      shift 1
       ;;
     "--reset_tools")
       tools=()
@@ -139,10 +144,12 @@ cleanup() {
 trap cleanup EXIT
 
 # Output
-echo >&2 "Release Tag: ${release_tag}"
-echo >&2 "Tools: $( join_by ", " "${tools[@]}" )"
-echo >&2 "Platforms: $( join_by ", " "${platforms[@]}" )"
-echo >&2 "Arches: $( join_by ", " "${arches[@]}" )"
+if [[ "${verbose}" == true ]]; then
+  echo >&2 "Release Tag: ${release_tag}"
+  echo >&2 "Tools: $( join_by ", " "${tools[@]}" )"
+  echo >&2 "Platforms: $( join_by ", " "${platforms[@]}" )"
+  echo >&2 "Arches: $( join_by ", " "${arches[@]}" )"
+fi
 
 # Prepare asset filter regex
 asset_regex='^('"$( IFS='|'; echo "${tools[*]}" )"')-'
@@ -158,14 +165,14 @@ for asset_base64_json in "${assets[@]}" ; do
   [[ "${asset_name}" =~ ${asset_regex} ]] || continue
 
   # Download the asset
-  echo >&2 "Downloading ${asset_name}..."
+  [[ "${verbose}" == true ]] && echo >&2 "Downloading ${asset_name}..."
   asset_url="$( echo "${asset_json}" | jq -r '.browser_download_url' )"
   download_path="${download_dir}/${asset_name}"
   curl -s -S -L -o "${download_path}" "${asset_url}"
 
   # Calcuate the SHA256
   asset_sha256="$( cat "${download_path}" | shasum -a 256 | awk '{print $1;}' )"
-  echo >&2 "SHA256 for ${asset_name}: ${asset_sha256}"
+  [[ "${verbose}" == true ]] && echo >&2 "SHA256 for ${asset_name}: ${asset_sha256}"
 
   # Create the sha256_values entry; the '%.*' in asset_name expansion will strip the extension for the file.
   asset_key="$( echo "${asset_name%.*}" | sed -E -e 's/[-.]/_/g'  )"
