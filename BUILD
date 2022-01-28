@@ -39,6 +39,18 @@ bzl_library(
     ],
 )
 
+# MARK: - Aliases
+
+alias(
+    name = "buildifier",
+    actual = "//buildifier",
+)
+
+alias(
+    name = "buildozer",
+    actual = "//buildozer",
+)
+
 # MARK: - Integration Test
 
 bzl_library(
