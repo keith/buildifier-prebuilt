@@ -28,6 +28,7 @@ arrays_sh="$(rlocation "${arrays_sh_location}")" || \
   (echo >&2 "Failed to locate ${arrays_sh_location}" && exit 1)
 source "${arrays_sh}"
 
+
 # MARK - Check for Required Software
 
 is_installed gh || fail "Could not find Github CLI (gh)."
@@ -46,7 +47,18 @@ Usage:
 ${utility} [OPTION] [<tag>]
 
 Options:
-  <tag>               The release tag.
+  --help                 Show usage.
+  --verbose              Enables verbose output to stderr.
+  --reset_tools          Resets the list of tools.
+  --tool <tool>          Adds the specified tool to the list of tools to be 
+                         retrieved.
+  --reset_platforms      Resets the list of platforms.
+  --platform <platform>  Adds the specified platform to the list of platforms 
+                         to be retrieved.
+  --reset_arches         Resets the list of arches.
+  --arch <arch>          Adds the specified arch to the list of arches to be
+                         retrieved
+  <tag>                  The release tag.
 EOF
   )"
 }
@@ -94,6 +106,10 @@ while (("$#")); do
       ;;
   esac
 done
+
+[[ ${#tools[@]} > 0 ]] || usage_error "Expected at least one tool to be specified."
+[[ ${#platforms[@]} > 0 ]] || usage_error "Expected at least one platform to be specified."
+[[ ${#arches[@]} > 0 ]] || usage_error "Expected at least one arch to be specified."
 
 [[ ${#args[@]} > 0 ]] && release_tag="${args[0]}"
 
