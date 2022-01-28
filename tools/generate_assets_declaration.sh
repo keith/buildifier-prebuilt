@@ -100,6 +100,8 @@ done
 
 # MARK - Query for buildtool release info
 
+# Switch to the workspace directory. We do this so that the GitHub CLI has 
+# multiple avenues for authenticating. 
 cd "${BUILD_WORKSPACE_DIRECTORY}"
 
 # Determine which release to retrieve
