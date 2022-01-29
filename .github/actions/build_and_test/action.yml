@@ -1,10 +1,18 @@
 name: Build and Test
 
+inputs:
+  github_token:
+    description: The Github token to authenticate gh CLI.
+    required: true
+
 runs:
   using: composite
   steps:
     - name: Execute Tests
       shell: bash
+      env:
+        # The tests make use of Github-specific functionality (e.g. gh).
+        GITHUB_TOKEN: ${{ inputs.github_token }}
       run: |
         bazelisk test //... 
 
@@ -15,5 +23,8 @@ runs:
 
     - name: Execute Integration Tests
       shell: bash
+      env:
+        # The tests make use of Github-specific functionality (e.g. gh).
+        GITHUB_TOKEN: ${{ inputs.github_token }}
       run: |
         bazelisk test //:all_integration_tests

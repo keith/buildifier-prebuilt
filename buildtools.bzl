@@ -133,14 +133,22 @@ def _create_assets(version, names = _TOOL_NAMES, platforms = _TYPICAL_PLATFORMS,
                 ))
     return assets
 
-_DEFAULT_ASSETS = _create_assets(version = "4.2.3", sha256_values = {
-    "buildifier_darwin_amd64": "954ec397089344b1564e45dc095e9331e121eb0f20e72032fcc8e94de78e5663",
-    "buildozer_darwin_amd64": "edcabae1d97bdc42559d7d1d65dfe7f8970db8d95d4bc9e7bf6656a9f2fb5592",
-    "buildifier_darwin_arm64": "9434043897a3c3821fda87046918e5a6c4320d8352df700f62046744c4d168a3",
-    "buildozer_darwin_arm64": "f8d0994620dec1247328f13db1d434b6489dd007f8e9b961dbd9363bc6fe7071",
-    "buildifier_linux_amd64": "a19126536bae9a3917a7fc4bdbbf0378371a1d1683ab2415857cf53bce9dee49",
-    "buildozer_linux_amd64": "6b4177321b770fb788b618caa453d34561b8c05081ae8b27657e527c2a3b5d52",
-})
+_DEFAULT_ASSETS = _create_assets(
+    version = "4.2.5",
+    names = ["buildifier", "buildozer"],
+    platforms = ["darwin", "linux"],
+    arches = ["amd64", "arm64"],
+    sha256_values = {
+        "buildifier_darwin_amd64": "757f246040aceb2c9550d02ef5d1f22d3ef1ff53405fe76ef4c6239ef1ea2cc1",
+        "buildifier_darwin_arm64": "4cf02e051f6cda18765935cb6e77cc938cf8b405064589a50fe9582f82c7edaf",
+        "buildifier_linux_amd64": "f94e71b22925aff76ce01a49e1c6c6d31f521bbbccff047b81f2ea01fd01a945",
+        "buildifier_linux_arm64": "2113d79e45efb51e2b3013c8737cb66cadae3fd89bd7e820438cb06201e50874",
+        "buildozer_darwin_amd64": "3fe671620e6cb7d2386f9da09c1de8de88b02b9dd9275cdecd8b9e417f74df1b",
+        "buildozer_darwin_arm64": "ff4d297023fe3e0fd14113c78f04cef55289ca5bfe5e45a916be738b948dc743",
+        "buildozer_linux_amd64": "e8e39b71c52318a9030dd9fcb9bbfd968d0e03e59268c60b489e6e6fc1595d7b",
+        "buildozer_linux_arm64": "96227142969540def1d23a9e8225524173390d23f3d7fd56ce9c4436953f02fc",
+    },
+)
 
 buildtools = struct(
     create_asset = _create_asset,
