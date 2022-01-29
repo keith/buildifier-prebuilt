@@ -54,9 +54,6 @@ cd "${scratch_dir}"
 "${bazel}" run -- @buildifier_prebuilt//:buildifier -r "${PWD}" || \
   fail "Expected buildifier command to succeed."
 
-# # DEBUG BEGIN
-# fail "STOP"
-# # DEBUG END
 
 # Ensure that the workspace works properly
 "${bazel}" test //... || fail "Expected tests to succeed in the scratch directory."
