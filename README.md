@@ -44,7 +44,8 @@ snippets for your WORKSPACE
 
 ### Specify Version of Buildtools
 
-If you would like to specify a specific version of buildtools to use, you can do one of the
+By default releases of these rules include the most up to date versions of the tools at the current
+time.  If you would like to specify a specific version of buildtools to use, you can do one of the
 following.
 
 #### Option 1: Quick and Easy
