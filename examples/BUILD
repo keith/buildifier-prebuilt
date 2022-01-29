@@ -33,7 +33,7 @@ sh_binary(
 bazel_integration_tests(
     name = "simple_test",
     bazel_versions = SUPPORTED_BAZEL_VERSIONS,
-    test_runner = ":test_runner",
+    test_runner = ":simple_test_runner",
     workspace_files = integration_test_utils.glob_workspace_files("simple") + [
         "//:local_repository_files",
     ],
