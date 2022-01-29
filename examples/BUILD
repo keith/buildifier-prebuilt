@@ -6,12 +6,27 @@ load(
     "integration_test_utils",
 )
 
+# Add test for buildozer
+
 default_test_runner(
-    name = "test_runner",
+    name = "default_test_runner",
     bazel_cmds = [
         "info",
         "run //:buildifier.check",
         "test //...",
+    ],
+)
+
+sh_binary(
+    name = "simple_test_runner",
+    testonly = True,
+    srcs = ["simple_test_runner.sh"],
+    data = [
+        "@cgrindel_rules_bazel_integration_test//tools:create_scratch_dir",
+    ],
+    deps = [
+        "@bazel_tools//tools/bash/runfiles",
+        "@cgrindel_bazel_starlib//shlib/lib:assertions",
     ],
 )
 
@@ -28,7 +43,7 @@ bazel_integration_tests(
 bazel_integration_tests(
     name = "specify_assets_test",
     bazel_versions = SUPPORTED_BAZEL_VERSIONS,
-    test_runner = ":test_runner",
+    test_runner = ":default_test_runner",
     workspace_files = integration_test_utils.glob_workspace_files("specify_assets") + [
         "//:local_repository_files",
     ],
