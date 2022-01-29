@@ -1,0 +1,23 @@
+workspace(name = "specify_assets_example")
+
+local_repository(
+    name = "buildifier_prebuilt",
+    path = "../..",
+)
+
+load("@buildifier_prebuilt//:deps.bzl", "buildifier_prebuilt_deps")
+
+buildifier_prebuilt_deps()
+
+load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
+
+bazel_skylib_workspace()
+
+load("@buildifier_prebuilt//:defs.bzl", "buildifier_prebuilt_register_toolchains", "buildtools_assets")
+
+buildifier_prebuilt_register_toolchains(
+    assets = buildtools_assets(
+        names = ["buildifier"],
+        version = "4.2.5",
+    ),
+)

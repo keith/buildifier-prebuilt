@@ -1,14 +1,16 @@
 workspace(name = "buildifier_prebuilt")
 
-load(":defs.bzl", "buildifier_prebuilt_deps", "buildifier_prebuilt_register_toolchains")
+load(":deps.bzl", "buildifier_prebuilt_deps")
 
 buildifier_prebuilt_deps()
-
-buildifier_prebuilt_register_toolchains()
 
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 
 bazel_skylib_workspace()
+
+load(":defs.bzl", "buildifier_prebuilt_register_toolchains")
+
+buildifier_prebuilt_register_toolchains()
 
 # MARK: - Test Dependencies
 
