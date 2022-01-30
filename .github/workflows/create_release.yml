@@ -24,7 +24,7 @@ jobs:
       # Checkout the code
       - uses: actions/checkout@v2
 
-      # Generate a token that has permission to create a PR
+      # Generate a token that has permission to create a PR to update the README.md.
       - uses: tibdex/github-app-token@v1
         id: generate_token
         with:
