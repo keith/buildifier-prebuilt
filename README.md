@@ -1,5 +1,7 @@
 # buildifier-prebuilt
 
+[![Build](https://github.com/keith/buildifier-prebuilt/actions/workflows/ci.yml/badge.svg?event=schedule)](https://github.com/keith/buildifier-prebuilt/actions/workflows/ci.yml)
+
 This repo contains bazel rules for `buildifier` and `buildozer` using
 prebuilt binaries with bazel toolchains instead of requiring you depend
 on `rules_go`. This also means you won't download every possible version
