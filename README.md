@@ -40,9 +40,11 @@ bazel run -- @buildifier_prebuilt//:buildifier ARGS
 
 ## Installation
 
-Checkout [the releases
-page](https://github.com/keith/buildifier-prebuilt/releases) for
-snippets for your WORKSPACE
+Add the following to your `WORKSPACE` file.
+
+<!-- BEGIN WORKSPACE SNIPPET -->
+<!-- END WORKSPACE SNIPPET -->
+
 
 ### Specify Version of Buildtools
 
