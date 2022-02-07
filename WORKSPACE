@@ -8,17 +8,26 @@ load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 
 bazel_skylib_workspace()
 
-load("@cgrindel_bazel_starlib//:deps.bzl", "bazel_starlib_dependencies")
-
-bazel_starlib_dependencies()
-
 load(":defs.bzl", "buildifier_prebuilt_register_toolchains")
 
 buildifier_prebuilt_register_toolchains()
 
-# MARK: - Test Dependencies
+# MARK: - Test and Release Dependencies
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "cgrindel_bazel_starlib",
+    sha256 = "076843b8e51d8b3c06fba4dda42f74e0fc4ec52245680ddfb19c866b27573633",
+    strip_prefix = "bazel-starlib-0.4.0",
+    urls = [
+        "http://github.com/cgrindel/bazel-starlib/archive/v0.4.0.tar.gz",
+    ],
+)
+
+load("@cgrindel_bazel_starlib//:deps.bzl", "bazel_starlib_dependencies")
+
+bazel_starlib_dependencies()
 
 http_archive(
     name = "cgrindel_rules_bazel_integration_test",
