@@ -43,6 +43,30 @@ bazel run -- @buildifier_prebuilt//:buildifier ARGS
 Add the following to your `WORKSPACE` file.
 
 <!-- BEGIN WORKSPACE SNIPPET -->
+```python
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "keith_buildifier_prebuilt",
+    sha256 = "49b7edf3490c13eae5b4b8aa98ed051fdd4f1b8dd60276d818e4f559614bf083",
+    strip_prefix = "buildifier-prebuilt-0.2.0",
+    urls = [
+        "http://github.com/keith/buildifier-prebuilt/archive/0.2.0.tar.gz",
+    ],
+)
+
+load("@buildifier_prebuilt//:deps.bzl", "buildifier_prebuilt_deps")
+
+buildifier_prebuilt_deps()
+
+load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
+
+bazel_skylib_workspace()
+
+load("@buildifier_prebuilt//:defs.bzl", "buildifier_prebuilt_register_toolchains")
+
+buildifier_prebuilt_register_toolchains()
+```
 <!-- END WORKSPACE SNIPPET -->
 
 
