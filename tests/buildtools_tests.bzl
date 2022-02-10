@@ -1,3 +1,7 @@
+"""
+Unit test setup
+"""
+
 load("@bazel_skylib//lib:unittest.bzl", "asserts", "unittest")
 load("@bazel_skylib//lib:new_sets.bzl", "sets")
 load("//:buildtools.bzl", "buildtools")

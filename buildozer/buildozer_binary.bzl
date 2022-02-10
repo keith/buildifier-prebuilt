@@ -1,3 +1,7 @@
+"""
+Simple rule for running buildozer from the toolchain config
+"""
+
 def _buildozer_binary(ctx):
     buildozer = ctx.toolchains["@buildifier_prebuilt//buildozer:toolchain"]._tool
     script = ctx.actions.declare_file("buildozer")
