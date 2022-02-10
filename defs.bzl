@@ -2,8 +2,7 @@
 Binary buildifier / buildozer setup
 """
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
-load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
 load("//:buildtools.bzl", "buildtools")
 
 def _buildifier_toolchain_setup_impl(repository_ctx):
@@ -37,7 +36,15 @@ _buildifier_toolchain_setup = repository_rule(
     },
 )
 
-def buildifier_prebuilt_register_toolchains(name = "buildifier_prebuilt_toolchains", assets = buildtools.DEFAULT_ASSETS):
+def buildifier_prebuilt_register_toolchains(
+        name = "buildifier_prebuilt_toolchains",
+        assets = buildtools.DEFAULT_ASSETS):
+    """Setup the buildifier toolchain and configure downloads
+
+    Args:
+        name: The name of the repository used for the toolchains.
+        assets: The buildozer and buildifier assets to use.
+    """
     if len(assets) == 0:
         fail("No assets were specified.")
 

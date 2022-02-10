@@ -25,13 +25,12 @@ prebuilt_toolchain = rule(
     provides = [platform_common.ToolchainInfo],
 )
 
-def declare_toolchain(tool_name, tool, os, arch):
+def declare_toolchain(tool_name, tool, os, arch):  # buildifier: disable=unnamed-macro
     """Create the custom and native toolchain for a platform
 
     Args:
-        name: The name of the underlying toolchain
-        buildifier: The buildifier binary for the platform / arch
-        buildozer: The buildozer binary for the platform / arch
+        tool_name: The tool the toolchain is being used for
+        tool: The tool to use
         os: The OS the toolchain is compatible with
         arch: The arch the toolchain is compatible with
     """

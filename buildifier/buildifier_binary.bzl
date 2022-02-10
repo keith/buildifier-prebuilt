@@ -1,3 +1,7 @@
+"""
+Simple rule for running buildifier from the toolchain config
+"""
+
 def _buildifier_binary(ctx):
     buildifier = ctx.toolchains["@buildifier_prebuilt//buildifier:toolchain"]._tool
     script = ctx.actions.declare_file("buildifier")

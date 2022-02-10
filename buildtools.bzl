@@ -1,3 +1,7 @@
+"""
+Setup code for setting up binaries for use
+"""
+
 load("@bazel_skylib//lib:new_sets.bzl", "sets")
 load("@bazel_skylib//lib:types.bzl", "types")
 
@@ -92,7 +96,12 @@ def _asset_from_json(json_str):
         return _create_asset(**result)
     fail("Unexpected result type decoding JSON string. %s" % (json_str))
 
-def _create_assets(version, names = _TOOL_NAMES, platforms = _TYPICAL_PLATFORMS, arches = _TYPICAL_ARCHES, sha256_values = {}):
+def _create_assets(
+        version,
+        names = _TOOL_NAMES,
+        platforms = _TYPICAL_PLATFORMS,
+        arches = _TYPICAL_ARCHES,
+        sha256_values = {}):
     """Create a `list` of asset `struct` values.
 
     Args:
@@ -100,6 +109,7 @@ def _create_assets(version, names = _TOOL_NAMES, platforms = _TYPICAL_PLATFORMS,
         names: Optional. A `list` of tools to include.
         platforms: Optional. A `list` of platforms to include.
         arches: Optional. A `list` of arches to include.
+        sha256_values: Optional. A `dict` of asset name to sha256.
 
     Returns:
         A `list` of buildtools assets.
