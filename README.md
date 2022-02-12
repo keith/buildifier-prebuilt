@@ -47,7 +47,7 @@ Add the following to your `WORKSPACE` file.
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
-    name = "keith_buildifier_prebuilt",
+    name = "buildifier_prebuilt",
     sha256 = "ee172ca10ffd39d2d6d1cc67ab5b7b4804fa000bc92211be111f05825766806c",
     strip_prefix = "buildifier-prebuilt-0.3.1",
     urls = [
