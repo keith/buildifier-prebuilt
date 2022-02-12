@@ -44,11 +44,13 @@ bzl_library(
 alias(
     name = "buildifier",
     actual = "//buildifier",
+    visibility = ["//visibility:public"],
 )
 
 alias(
     name = "buildozer",
     actual = "//buildozer",
+    visibility = ["//visibility:public"],
 )
 
 # MARK: - Integration Test
