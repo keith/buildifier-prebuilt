@@ -11,6 +11,7 @@ load(
 generate_workspace_snippet(
     name = "generate_workspace_snippet",
     template = "workspace_snippet.tmpl",
+    workspace_name = "buildifier_prebuilt",
 )
 
 generate_release_notes(
