@@ -1,3 +1,6 @@
+# Avoid https://github.com/bazelbuild/bazel/issues/14459 since we don't need Xcode
+common --repo_env=BAZEL_USE_CPP_ONLY_TOOLCHAIN=1
+
 # For bazel-in-bazel testing
 # Trick bazel into treating BUILD files under examples/* as being regular files
 # This lets us glob() up all the files inside the examples to make them inputs to tests
