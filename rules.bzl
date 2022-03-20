@@ -21,10 +21,10 @@ def _buildifier(ctx):
     if ctx.attr.disabled_rewrites:
         args.append("-buildifier_disable={}".format(",".join(ctx.attr.disabled_rewrites)))
 
-    if ctx.attr.lint_warnings:
-        if not ctx.attr.lint_mode:
-            fail("Cannot pass 'lint_warnings' without a 'lint_mode'")
-        args.append("--warnings={}".format(",".join(ctx.attr.lint_warnings)))
+    if len(ctx.attr.lint_warnings) > 0 and not ctx.attr.lint_mode:
+        fail("Cannot pass 'lint_warnings' without a 'lint_mode'")
+    for warning in ctx.attr.lint_warnings:
+        args.append("--warnings={}".format(warning))
 
     if ctx.attr.add_tables:
         args.append("-add_tables=%s" % ctx.file.add_tables.path)
@@ -57,34 +57,34 @@ def _buildifier(ctx):
 buildifier = rule(
     implementation = _buildifier,
     attrs = {
-        "verbose": attr.bool(
-            doc = "Print verbose information on standard error",
+        "add_tables": attr.label(
+            mandatory = False,
+            doc = "path to JSON file with custom table definitions which will be merged with the built-in tables",
+            allow_single_file = True,
+        ),
+        "disabled_rewrites": attr.string_list(
+            allow_empty = True,
+            doc = "buildifier rewrites you want to disable",
+        ),
+        "exclude_patterns": attr.string_list(
+            allow_empty = True,
+            doc = "A list of glob patterns passed to the find command. E.g. './vendor/*' to exclude the Go vendor directory",
+        ),
+        "lint_mode": attr.string(
+            doc = "Linting mode",
+            values = ["", "warn", "fix"],
+        ),
+        "lint_warnings": attr.string_list(
+            allow_empty = True,
+            doc = "all prefixed with +/- if you want to include in or exclude from the default set of warnings, or none prefixed with +/- if you want to override the default set, or 'all' for all available warnings",
         ),
         "mode": attr.string(
             default = "fix",
             doc = "Formatting mode",
             values = ["check", "diff", "print_if_changed", "fix"],
         ),
-        "lint_mode": attr.string(
-            doc = "Linting mode",
-            values = ["", "warn", "fix"],
-        ),
-        "disabled_rewrites": attr.string_list(
-            allow_empty = True,
-            doc = "buildifier rewrites you want to disable",
-        ),
-        "lint_warnings": attr.string_list(
-            allow_empty = True,
-            doc = "all prefixed with +/- if you want to include in or exclude from the default set of warnings, or none prefixed with +/- if you want to override the default set, or 'all' for all available warnings",
-        ),
-        "add_tables": attr.label(
-            mandatory = False,
-            doc = "path to JSON file with custom table definitions which will be merged with the built-in tables",
-            allow_single_file = True,
-        ),
-        "exclude_patterns": attr.string_list(
-            allow_empty = True,
-            doc = "A list of glob patterns passed to the find command. E.g. './vendor/*' to exclude the Go vendor directory",
+        "verbose": attr.bool(
+            doc = "Print verbose information on standard error",
         ),
         "_runner": attr.label(
             default = "@buildifier_prebuilt//:runner.bash.template",

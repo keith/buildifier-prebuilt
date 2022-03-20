@@ -6,6 +6,12 @@ buildifier(
         "./.git/*",
     ],
     lint_mode = "warn",
+    lint_warnings = [
+        # This demonstrates how one can enable all warnings and then disable
+        # select categories.
+        "all",
+        "-cc-native",
+    ],
     mode = "diff",
 )
 
