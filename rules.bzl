@@ -21,10 +21,10 @@ def _buildifier(ctx):
     if ctx.attr.disabled_rewrites:
         args.append("-buildifier_disable={}".format(",".join(ctx.attr.disabled_rewrites)))
 
-    if ctx.attr.lint_warnings:
-        if not ctx.attr.lint_mode:
-            fail("Cannot pass 'lint_warnings' without a 'lint_mode'")
-        args.append("--warnings={}".format(",".join(ctx.attr.lint_warnings)))
+    if len(ctx.attr.lint_warnings) > 0 and not ctx.attr.lint_mode:
+        fail("Cannot pass 'lint_warnings' without a 'lint_mode'")
+    for warning in ctx.attr.lint_warnings:
+        args.append("--warnings={}".format(warning))
 
     if ctx.attr.add_tables:
         args.append("-add_tables=%s" % ctx.file.add_tables.path)
