@@ -1,10 +1,10 @@
-load("//:bazel_versions.bzl", "SUPPORTED_BAZEL_VERSIONS")
 load(
-    "@cgrindel_rules_bazel_integration_test//bazel_integration_test:defs.bzl",
+    "@contrib_rules_bazel_integration_test//bazel_integration_test:defs.bzl",
     "bazel_integration_tests",
     "default_test_runner",
     "integration_test_utils",
 )
+load("//:bazel_versions.bzl", "SUPPORTED_BAZEL_VERSIONS")
 
 # Add test for buildozer
 
@@ -22,7 +22,7 @@ sh_binary(
     testonly = True,
     srcs = ["simple_test_runner.sh"],
     data = [
-        "@cgrindel_rules_bazel_integration_test//tools:create_scratch_dir",
+        "@contrib_rules_bazel_integration_test//tools:create_scratch_dir",
     ],
     deps = [
         "@bazel_tools//tools/bash/runfiles",
