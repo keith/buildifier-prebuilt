@@ -18,6 +18,9 @@ def _buildifier(ctx):
     if ctx.attr.lint_mode:
         args.append("-lint=%s" % ctx.attr.lint_mode)
 
+    if ctx.attr.diff_command:
+        args.append("-diff_command=%s" % ctx.attr.diff_command)
+
     if ctx.attr.disabled_rewrites:
         args.append("-buildifier_disable={}".format(",".join(ctx.attr.disabled_rewrites)))
 
@@ -76,6 +79,9 @@ buildifier = rule(
         "lint_warnings": attr.string_list(
             allow_empty = True,
             doc = "all prefixed with +/- if you want to include in or exclude from the default set of warnings, or none prefixed with +/- if you want to override the default set, or 'all' for all available warnings",
+        ),
+        "diff_command": attr.string(
+            doc = "Command to use to show diff, with mode=diff. E.g. 'diff -u'",
         ),
         "add_tables": attr.label(
             mandatory = False,
