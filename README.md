@@ -48,10 +48,10 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "buildifier_prebuilt",
-    sha256 = "c0c8a5e6caf9a99b037e77ed7a5f17615d50881d0d93de3e85c014705f7914fd",
-    strip_prefix = "buildifier-prebuilt-0.4.1",
+    sha256 = "b3fd85ae7e45c2f36bce52cfdbdb6c20261761ea5928d1686edc8873b0d0dad0",
+    strip_prefix = "buildifier-prebuilt-5.1.0",
     urls = [
-        "http://github.com/keith/buildifier-prebuilt/archive/0.4.1.tar.gz",
+        "http://github.com/keith/buildifier-prebuilt/archive/5.1.0.tar.gz",
     ],
 )
 
