@@ -72,8 +72,8 @@ buildifier_prebuilt_register_toolchains()
 
 ### Specify Version of Buildtools
 
-By default releases of these rules include the most up to date versions of the tools at the current
-time.  If you would like to specify a specific version of buildtools to use, you can do one of the
+By default releases of these rules hardcode the most up to date versions of the tools at release
+time. If you would like to specify a specific version of buildtools to use, you can do one of the
 following.
 
 #### Option 1: Quick and Easy
