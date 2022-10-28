@@ -1,4 +1,4 @@
-load("@buildifier_prebuilt//:rules.bzl", "buildifier")
+load("@buildifier_prebuilt//:rules.bzl", "buildifier", "buildifier_test")
 
 buildifier(
     name = "buildifier.check",
@@ -12,7 +12,18 @@ buildifier(
         "all",
         "-cc-native",
     ],
-    mode = "diff",
+)
+
+buildifier_test(
+    name = "buildifier.test",
+    srcs = glob(["**/BUILD"]),
+    lint_mode = "warn",
+    lint_warnings = [
+        # This demonstrates how one can enable all warnings and then disable
+        # select categories.
+        "all",
+        "-cc-native",
+    ],
 )
 
 sh_binary(
