@@ -2,7 +2,6 @@
 Rules to use the prebuilt buildifier / buildozer binaries
 """
 
-load("@bazel_skylib//lib:shell.bzl", "shell")
 load("//buildifier:buildifier_binary.bzl", _buildifier_binary = "buildifier_binary")
 load("//buildozer:buildozer_binary.bzl", _buildozer_binary = "buildozer_binary")
 load(

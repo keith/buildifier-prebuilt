@@ -38,11 +38,6 @@ def buildifier_attr_factory(test_rule = False):
       A dictionary of attributes relevant to the rule
     """
     attrs = {
-        "buildifier": attr.label(
-            default = "//buildifier",
-            cfg = "exec",
-            executable = True,
-        ),
         "verbose": attr.bool(
             doc = "Print verbose information on standard error",
         ),
@@ -128,11 +123,10 @@ def buildifier_impl_factory(ctx, test_rule = False):
     if ctx.attr.lint_mode:
         args.append("-lint=%s" % ctx.attr.lint_mode)
 
-    if ctx.attr.lint_warnings:
-        if not ctx.attr.lint_mode:
-            fail("Cannot pass 'lint_warnings' without a 'lint_mode'")
-        for warning in ctx.attr.lint_warnings:
-            args.append("--warnings={}".format(warning))
+    if len(ctx.attr.lint_warnings) > 0 and not ctx.attr.lint_mode:
+        fail("Cannot pass 'lint_warnings' without a 'lint_mode'")
+    for warning in ctx.attr.lint_warnings:
+        args.append("--warnings={}".format(warning))
 
     if ctx.attr.multi_diff:
         args.append("-multi_diff")
@@ -152,10 +146,11 @@ def buildifier_impl_factory(ctx, test_rule = False):
         exclude_patterns = ["\\! -path %s" % shell.quote(pattern) for pattern in ctx.attr.exclude_patterns]
         exclude_patterns_str = " ".join(exclude_patterns)
 
+    buildifier = ctx.toolchains["@buildifier_prebuilt//buildifier:toolchain"]._tool
     out_file = ctx.actions.declare_file(ctx.label.name + ".bash")
     substitutions = {
         "@@ARGS@@": shell.array_literal(args),
-        "@@BUILDIFIER_SHORT_PATH@@": shell.quote(ctx.executable.buildifier.short_path),
+        "@@BUILDIFIER_SHORT_PATH@@": shell.quote(buildifier.short_path),
         "@@EXCLUDE_PATTERNS@@": exclude_patterns_str,
     }
     ctx.actions.expand_template(
@@ -165,7 +160,7 @@ def buildifier_impl_factory(ctx, test_rule = False):
         is_executable = True,
     )
 
-    runfiles = [ctx.executable.buildifier]
+    runfiles = [buildifier]
     if test_rule:
         runfiles.extend(ctx.files.srcs)
 

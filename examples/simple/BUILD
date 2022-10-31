@@ -16,7 +16,7 @@ buildifier(
 
 buildifier_test(
     name = "buildifier.test",
-    srcs = glob(["**/BUILD"]),
+    srcs = ["BUILD"],
     lint_mode = "warn",
 )
 
