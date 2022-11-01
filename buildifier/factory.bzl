@@ -4,7 +4,7 @@ This module contains factory methods for simple rule and implementation generati
 
 load("@bazel_skylib//lib:shell.bzl", "shell")
 
-def buildifier_attr_factory(test_rule = False):
+def buildifier_attr_factory(*, test_rule):
     """
     Helper macro to generate a struct of attrs for use in a rule() definition.
 
@@ -78,7 +78,7 @@ def buildifier_attr_factory(test_rule = False):
 
     return attrs
 
-def buildifier_impl_factory(ctx, test_rule = False):
+def buildifier_impl_factory(ctx, *, test_rule):
     """
     Helper macro to generate a buildifier or buildifier_test rule.
 
