@@ -2,6 +2,9 @@ load("@buildifier_prebuilt//:rules.bzl", "buildifier", "buildifier_test")
 
 buildifier(
     name = "buildifier.check",
+    disabled_rewrites = [
+        "label",
+    ],
     exclude_patterns = [
         "./.git/*",
     ],
