@@ -1,4 +1,4 @@
-load("@buildifier_prebuilt//:rules.bzl", "buildifier")
+load("@buildifier_prebuilt//:rules.bzl", "buildifier", "buildifier_test")
 
 buildifier(
     name = "buildifier.check",
@@ -6,7 +6,12 @@ buildifier(
         "./.git/*",
     ],
     lint_mode = "warn",
-    mode = "diff",
+)
+
+buildifier_test(
+    name = "buildifier.test",
+    srcs = glob(["**/BUILD"]),
+    lint_mode = "warn",
 )
 
 sh_binary(

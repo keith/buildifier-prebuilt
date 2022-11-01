@@ -1,4 +1,4 @@
-load("@buildifier_prebuilt//:rules.bzl", "buildifier")
+load("@buildifier_prebuilt//:rules.bzl", "buildifier", "buildifier_test")
 
 buildifier(
     name = "buildifier.check",
@@ -12,7 +12,12 @@ buildifier(
         "all",
         "-cc-native",
     ],
-    mode = "diff",
+)
+
+buildifier_test(
+    name = "buildifier.test",
+    srcs = ["BUILD"],
+    lint_mode = "warn",
 )
 
 sh_binary(
