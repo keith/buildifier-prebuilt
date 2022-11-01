@@ -4,29 +4,6 @@ This module contains factory methods for simple rule and implementation generati
 
 load("@bazel_skylib//lib:shell.bzl", "shell")
 
-# buildifier: disable=print
-def _value_deprecation(ctx, attr, value):
-    """
-    Prints a deprecation message related to a specific value for an attr.
-
-    Args:
-      ctx:      The execution context
-      attr:     A String representing the attribute name
-      value:    The deprecated value
-    """
-    print("DEPRECATION NOTICE: value '%s' for attribute '%s' will be removed in the future. Migrate '%s' to buildifier_test." % (value, attr, ctx.label))
-
-# buildifier: disable=print
-def _attr_deprecation(ctx, attr):
-    """
-    Prints an attribute deprecation message.
-
-    Args:
-      ctx:      The execution context
-      attr:     A String representing the deprecated attribute name
-    """
-    print("DEPRECATION NOTICE: attribute '%s' will be removed in the future. Migrate '%s' to buildifier_test." % (attr, ctx.label))
-
 def buildifier_attr_factory(test_rule = False):
     """
     Helper macro to generate a struct of attrs for use in a rule() definition.
@@ -115,10 +92,6 @@ def buildifier_impl_factory(ctx, test_rule = False):
     Returns:
       A DefaultInfo provider
     """
-
-    if not test_rule and ctx.attr.mode in ["check", "diff", "print_if_changed"]:
-        _value_deprecation(ctx, "mode", ctx.attr.mode)
-
     args = [
         "-mode=%s" % ctx.attr.mode,
         "-v=%s" % str(ctx.attr.verbose).lower(),
@@ -134,13 +107,9 @@ def buildifier_impl_factory(ctx, test_rule = False):
 
     if ctx.attr.multi_diff:
         args.append("-multi_diff")
-        if not test_rule:
-            _attr_deprecation(ctx, "multi_diff")
 
     if ctx.attr.diff_command:
         args.append("-diff_command=%s" % ctx.attr.diff_command)
-        if not test_rule:
-            _attr_deprecation(ctx, "diff_command")
 
     if ctx.attr.add_tables:
         args.append("-add_tables=%s" % ctx.file.add_tables.path)

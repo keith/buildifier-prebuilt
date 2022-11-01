@@ -12,6 +12,7 @@ buildifier(
         "all",
         "-cc-native",
     ],
+    mode = "diff",
 )
 
 buildifier_test(
