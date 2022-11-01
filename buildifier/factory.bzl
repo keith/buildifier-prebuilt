@@ -93,6 +93,10 @@ def buildifier_attr_factory(test_rule = False):
                 allow_empty = True,
                 doc = "A list of glob patterns passed to the find command. E.g. './vendor/*' to exclude the Go vendor directory",
             ),
+            "disabled_rewrites": attr.string_list(
+                allow_empty = True,
+                doc = "buildifier rewrites you want to disable",
+            ),
         })
 
     return attrs
@@ -140,6 +144,9 @@ def buildifier_impl_factory(ctx, test_rule = False):
 
     if ctx.attr.add_tables:
         args.append("-add_tables=%s" % ctx.file.add_tables.path)
+
+    if not test_rule and ctx.attr.disabled_rewrites:
+        args.append("-buildifier_disable={}".format(",".join(ctx.attr.disabled_rewrites)))
 
     exclude_patterns_str = ""
     if not test_rule and ctx.attr.exclude_patterns:
