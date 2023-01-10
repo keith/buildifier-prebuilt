@@ -144,19 +144,19 @@ def _create_assets(
     return assets
 
 _DEFAULT_ASSETS = _create_assets(
-    version = "5.1.0",
+    version = "6.0.0",
     names = ["buildifier", "buildozer"],
     platforms = ["darwin", "linux"],
     arches = ["amd64", "arm64"],
     sha256_values = {
-        "buildifier_darwin_amd64": "c9378d9f4293fc38ec54a08fbc74e7a9d28914dae6891334401e59f38f6e65dc",
-        "buildifier_darwin_arm64": "745feb5ea96cb6ff39a76b2821c57591fd70b528325562486d47b5d08900e2e4",
-        "buildifier_linux_amd64": "52bf6b102cb4f88464e197caac06d69793fa2b05f5ad50a7e7bf6fbd656648a3",
-        "buildifier_linux_arm64": "917d599dbb040e63ae7a7e1adb710d2057811902fdc9e35cce925ebfd966eeb8",
-        "buildozer_darwin_amd64": "294f4d0790f4dba18c9b7617f57563e07c2c7e529a8915bcbc49170dc3c08eb9",
-        "buildozer_darwin_arm64": "57f8d90fac6b111bd0859b97847d3db2ce71419f44588b0e91250892037cf638",
-        "buildozer_linux_amd64": "7346ce1396dfa9344a5183c8e3e6329f067699d71c4391bd28317391228666bf",
-        "buildozer_linux_arm64": "0b08e384709ec4d4f5320bf31510d2cefe8f9e425a6565b31db06b2398ff9dc4",
+        "buildifier_darwin_amd64": "3f8ab7dd5d5946ce44695f29c3b895ad11a9a6776c247ad5273e9c8480216ae1",
+        "buildifier_darwin_arm64": "21fa0d48ef0b7251eb6e3521cbe25d1e52404763cd2a43aa29f69b5380559dd1",
+        "buildifier_linux_amd64": "7ff82176879c0c13bc682b6b0e482d670fbe13bbb20e07915edb0ad11be50502",
+        "buildifier_linux_arm64": "9ffa62ea1f55f420c36eeef1427f71a34a5d24332cb861753b2b59c66d6343e2",
+        "buildozer_darwin_amd64": "17c97b23ebf0aa59c3c457800090e5d9b937511bafbe91d22aec972fbdf588d0",
+        "buildozer_darwin_arm64": "8d5e26446cd5a945588b1e0c72854d2cc367fac98d16ddeccbc59b0c87a9a05e",
+        "buildozer_linux_amd64": "b46c12c81ab45306d3bbb4b3a6cd795532d1c3036ed126fbc43fde23d6c35f2d",
+        "buildozer_linux_arm64": "548c3a6c890ef5cc4398d5afeb1399717b43740eb910f7488a36b76440ca0383",
     },
 )
 
