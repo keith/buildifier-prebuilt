@@ -2,10 +2,10 @@
 Common bazel version requirements for tests
 """
 
-CURRENT_BAZEL_VERSION = "5.0.0"
+CURRENT_BAZEL_VERSION = "6.0.0"
 
 OTHER_BAZEL_VERSIONS = [
-    "4.2.2",
+    "5.4.0",
 ]
 
 SUPPORTED_BAZEL_VERSIONS = [
