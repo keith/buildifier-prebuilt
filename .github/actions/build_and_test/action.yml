@@ -14,12 +14,8 @@ runs:
         # The tests make use of Github-specific functionality (e.g. gh).
         GITHUB_TOKEN: ${{ inputs.github_token }}
       run: |
-        bazelisk test //... 
-
-    - name: Build Anything Not Tested
-      shell: bash
-      run: |
-        bazelisk build //... 
+        bazelisk test //...
+        bazelisk test //... --enable_bzlmod
 
     - name: Execute Integration Tests
       shell: bash
@@ -28,3 +24,4 @@ runs:
         GITHUB_TOKEN: ${{ inputs.github_token }}
       run: |
         bazelisk test //:all_integration_tests
+        bazelisk test //:all_integration_tests --enable_bzlmod
