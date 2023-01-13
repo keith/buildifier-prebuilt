@@ -38,12 +38,14 @@ _buildifier_toolchain_setup = repository_rule(
 
 def buildifier_prebuilt_register_toolchains(
         name = "buildifier_prebuilt_toolchains",
-        assets = buildtools.DEFAULT_ASSETS):
+        assets = buildtools.DEFAULT_ASSETS,
+        register_toolchains = True):
     """Setup the buildifier toolchain and configure downloads
 
     Args:
         name: The name of the repository used for the toolchains.
         assets: The buildozer and buildifier assets to use.
+        register_toolchains: Whether to register the toolchains.
     """
     if len(assets) == 0:
         fail("No assets were specified.")
@@ -77,7 +79,14 @@ def buildifier_prebuilt_register_toolchains(
         name = name,
         assets_json = buildtools.asset_to_json(assets),
     )
-    native.register_toolchains(*toolchain_names)
+
+    if register_toolchains:
+        native.register_toolchains(*toolchain_names)
 
 buildtools_asset = buildtools.create_asset
 buildtools_assets = buildtools.create_assets
+
+def _impl(_):
+    buildifier_prebuilt_register_toolchains(register_toolchains = False)
+
+buildifier_prebuilt_deps_extension = module_extension(implementation = _impl)
