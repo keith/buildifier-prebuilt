@@ -8,5 +8,12 @@ tasks:
     build_targets:
       - '@buildifier_prebuilt//:buildifier'
       - '@buildifier_prebuilt//:buildozer'
-    test_targets:
-      - '@buildifier_prebuilt//tests/...'
+
+bcr_test_module:
+  module_path: ""
+  tasks:
+    run_test_module:
+      name: "Run test module"
+      platform: ${{ platform }}
+      test_targets:
+        - '//test/...'
