@@ -11,6 +11,8 @@ tasks:
 
 bcr_test_module:
   module_path: ""
+  matrix:
+    platform: ["macos", "ubuntu2004"]
   tasks:
     run_test_module:
       name: "Run test module"
