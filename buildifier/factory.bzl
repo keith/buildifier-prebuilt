@@ -18,6 +18,10 @@ def buildifier_attr_factory(*, test_rule):
         "verbose": attr.bool(
             doc = "Print verbose information on standard error",
         ),
+        "exclude_patterns": attr.string_list(
+            allow_empty = True,
+            doc = "A list of glob patterns passed to the find command. E.g. './vendor/*' to exclude the Go vendor directory. In test rules, this attribute requires the use of the no_sandbox attribute.",
+        ),
         "mode": attr.string(
             default = "fix" if not test_rule else "diff",
             doc = "Formatting mode",
@@ -52,7 +56,6 @@ def buildifier_attr_factory(*, test_rule):
     if test_rule:
         attrs.update({
             "srcs": attr.label_list(
-                allow_empty = False,
                 allow_files = [
                     ".bazel",
                     ".bzl",
@@ -63,13 +66,17 @@ def buildifier_attr_factory(*, test_rule):
                 ],
                 doc = "A list of labels representing the starlark files to include in the test",
             ),
+            "no_sandbox": attr.bool(
+                default = False,
+                doc = "Set to True to enable running buildifier on all files in the workspace",
+            ),
+            "workspace": attr.label(
+                allow_single_file = True,
+                doc = "Label of the WORKSPACE file; required when the no-sandbox attribute is True",
+            ),
         })
     else:
         attrs.update({
-            "exclude_patterns": attr.string_list(
-                allow_empty = True,
-                doc = "A list of glob patterns passed to the find command. E.g. './vendor/*' to exclude the Go vendor directory",
-            ),
             "disabled_rewrites": attr.string_list(
                 allow_empty = True,
                 doc = "buildifier rewrites you want to disable",
@@ -118,9 +125,17 @@ def buildifier_impl_factory(ctx, *, test_rule):
         args.append("-buildifier_disable={}".format(",".join(ctx.attr.disabled_rewrites)))
 
     exclude_patterns_str = ""
-    if not test_rule and ctx.attr.exclude_patterns:
+    if ctx.attr.exclude_patterns:
+        if test_rule and not ctx.attr.no_sandbox:
+            fail("Cannot use 'exclude_patterns' in a test rule without 'no_sandbox'")
         exclude_patterns = ["\\! -path %s" % shell.quote(pattern) for pattern in ctx.attr.exclude_patterns]
         exclude_patterns_str = " ".join(exclude_patterns)
+
+    workspace = ""
+    if test_rule and ctx.attr.no_sandbox:
+        if not ctx.file.workspace:
+            fail("Cannot use 'no_sandbox' without a 'workspace'")
+        workspace = ctx.file.workspace.path
 
     buildifier = ctx.toolchains["@buildifier_prebuilt//buildifier:toolchain"]._tool
     out_file = ctx.actions.declare_file(ctx.label.name + ".bash")
@@ -128,6 +143,7 @@ def buildifier_impl_factory(ctx, *, test_rule):
         "@@ARGS@@": shell.array_literal(args),
         "@@BUILDIFIER_SHORT_PATH@@": shell.quote(buildifier.short_path),
         "@@EXCLUDE_PATTERNS@@": exclude_patterns_str,
+        "@@WORKSPACE@@": workspace,
     }
     ctx.actions.expand_template(
         template = ctx.file._runner,
@@ -139,6 +155,8 @@ def buildifier_impl_factory(ctx, *, test_rule):
     runfiles = [buildifier]
     if test_rule:
         runfiles.extend(ctx.files.srcs)
+        if ctx.attr.no_sandbox:
+            runfiles.append(ctx.file.workspace)
 
     return DefaultInfo(
         files = depset([out_file]),
