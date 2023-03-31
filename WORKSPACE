@@ -21,7 +21,7 @@ http_archive(
     sha256 = "75ede4943a0000661cab0a4495bd10ddfc45bc73df83677eb75f49202ea09a34",
     strip_prefix = "bazel-starlib-0.5.0",
     urls = [
-        "http://github.com/cgrindel/bazel-starlib/archive/v0.5.0.tar.gz",
+        "https://github.com/cgrindel/bazel-starlib/archive/v0.5.0.tar.gz",
     ],
 )
 
@@ -34,7 +34,7 @@ http_archive(
     sha256 = "ab9bbf776b5874f8a02f639fec2fbb3e3eefa4403cf861ae00d7c7e4d757f9ff",
     strip_prefix = "rules_bazel_integration_test-0.6.2",
     urls = [
-        "http://github.com/bazel-contrib/rules_bazel_integration_test/archive/v0.6.2.tar.gz",
+        "https://github.com/bazel-contrib/rules_bazel_integration_test/archive/v0.6.2.tar.gz",
     ],
 )
 
