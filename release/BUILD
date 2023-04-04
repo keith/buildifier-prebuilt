@@ -11,6 +11,7 @@ load(
 
 generate_module_snippet(
     name = "generate_module_snippet",
+    dev_dependency = True,
     module_name = "buildifier_prebuilt",
 )
 

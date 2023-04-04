@@ -44,7 +44,11 @@ bazel run -- @buildifier_prebuilt//:buildifier ARGS
 
 <!-- BEGIN MODULE SNIPPET -->
 ```python
-bazel_dep(name = "buildifier_prebuilt", version = "6.1.0")
+bazel_dep(
+    name = "buildifier_prebuilt",
+    version = "6.1.0",
+    dev_dependency = True,
+)
 ```
 <!-- END MODULE SNIPPET -->
 
