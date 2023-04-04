@@ -32,6 +32,7 @@ sh_binary(
 
 bazel_integration_tests(
     name = "simple_test",
+    bazel_binaries = bazel_binaries,
     bazel_versions = bazel_binaries.versions.all,
     test_runner = ":simple_test_runner",
     workspace_files = integration_test_utils.glob_workspace_files("simple") + [
@@ -42,6 +43,7 @@ bazel_integration_tests(
 
 bazel_integration_tests(
     name = "specify_assets_test",
+    bazel_binaries = bazel_binaries,
     bazel_versions = bazel_binaries.versions.all,
     test_runner = ":default_test_runner",
     workspace_files = integration_test_utils.glob_workspace_files("specify_assets") + [
