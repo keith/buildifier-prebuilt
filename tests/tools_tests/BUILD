@@ -5,7 +5,10 @@ sh_test(
     data = [
         "//tools:generate_assets_declaration",
     ],
-    env_inherit = ["HOME"],
+    env_inherit = [
+        "CC",
+        "HOME",
+    ],
     deps = [
         "@bazel_tools//tools/bash/runfiles",
         "@cgrindel_bazel_starlib//shlib/lib:assertions",
