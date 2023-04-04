@@ -1,4 +1,5 @@
 load("@bazel_binaries//:defs.bzl", "bazel_binaries")
+load("@cgrindel_bazel_starlib//bzllib:defs.bzl", "lists")
 load(
     "@rules_bazel_integration_test//bazel_integration_test:defs.bzl",
     "bazel_integration_tests",
@@ -18,9 +19,9 @@ default_test_runner(
 )
 
 sh_binary(
-    name = "simple_test_runner",
+    name = "modify_example_test_runner",
     testonly = True,
-    srcs = ["simple_test_runner.sh"],
+    srcs = ["modify_example_test_runner.sh"],
     data = [
         "@rules_bazel_integration_test//tools:create_scratch_dir",
     ],
@@ -30,39 +31,52 @@ sh_binary(
     ],
 )
 
-bazel_integration_tests(
-    name = "simple_test",
-    bazel_binaries = bazel_binaries,
-    bazel_versions = bazel_binaries.versions.all,
-    test_runner = ":simple_test_runner",
-    workspace_files = integration_test_utils.glob_workspace_files("simple") + [
-        "//:local_repository_files",
-    ],
-    workspace_path = "simple",
-)
+_ALL_EXAMPLES = [
+    "bzlmod",
+    "simple",
+    "specify_assets",
+]
 
-bazel_integration_tests(
-    name = "specify_assets_test",
-    bazel_binaries = bazel_binaries,
-    bazel_versions = bazel_binaries.versions.all,
-    test_runner = ":default_test_runner",
-    workspace_files = integration_test_utils.glob_workspace_files("specify_assets") + [
-        "//:local_repository_files",
-    ],
-    workspace_path = "specify_assets",
-)
+_EXAMPLE_RUNNERS = {
+    "bzlmod": ":modify_example_test_runner",
+    "simple": ":modify_example_test_runner",
+}
+
+_EXAMPLE_BAZEL_VERSIONS = {
+    "bzlmod": [bazel_binaries.versions.current],
+}
+
+[
+    bazel_integration_tests(
+        name = "{}_test".format(example),
+        bazel_binaries = bazel_binaries,
+        bazel_versions = _EXAMPLE_BAZEL_VERSIONS.get(
+            example,
+            bazel_binaries.versions.all,
+        ),
+        test_runner = _EXAMPLE_RUNNERS.get(example, ":default_test_runner"),
+        workspace_files = integration_test_utils.glob_workspace_files(example) + [
+            "//:local_repository_files",
+        ],
+        workspace_path = example,
+    )
+    for example in _ALL_EXAMPLES
+]
 
 test_suite(
     name = "integration_tests",
     # If you don't apply the test tags to the test suite, the test suite will
     # be found when `bazel test //...` is executed.
     tags = integration_test_utils.DEFAULT_INTEGRATION_TEST_TAGS,
-    tests = integration_test_utils.bazel_integration_test_names(
-        "simple_test",
-        bazel_binaries.versions.all,
-    ) + integration_test_utils.bazel_integration_test_names(
-        "specify_assets_test",
-        bazel_binaries.versions.all,
-    ),
+    tests = lists.flatten([
+        integration_test_utils.bazel_integration_test_names(
+            "{}_test".format(example),
+            _EXAMPLE_BAZEL_VERSIONS.get(
+                example,
+                bazel_binaries.versions.all,
+            ),
+        )
+        for example in _ALL_EXAMPLES
+    ]),
     visibility = ["//:__subpackages__"],
 )
