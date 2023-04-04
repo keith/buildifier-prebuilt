@@ -55,12 +55,6 @@ alias(
 
 # MARK: - Integration Test
 
-bzl_library(
-    name = "bazel_versions",
-    srcs = ["bazel_versions.bzl"],
-    visibility = ["//:__subpackages__"],
-)
-
 filegroup(
     name = "local_repository_files",
     srcs = [

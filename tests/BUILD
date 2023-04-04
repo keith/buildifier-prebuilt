@@ -8,7 +8,6 @@ build_test(
         "//:deps",
         "//:rules",
         "//:buildtools",
-        "//:bazel_versions",
     ],
 )
 
