@@ -59,6 +59,7 @@ filegroup(
     name = "local_repository_files",
     srcs = [
         "BUILD",
+        "MODULE.bazel",
         "WORKSPACE",
         "runner.bash.template",
         "//buildifier:all_files",

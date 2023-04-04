@@ -1,0 +1,10 @@
+module(
+    name = "bzlmod_example",
+    version = "0.0.0",
+)
+
+bazel_dep(name = "buildifier_prebuilt", version = "0.0.0")
+local_path_override(
+    module_name = "buildifier_prebuilt",
+    path = "../..",
+)
