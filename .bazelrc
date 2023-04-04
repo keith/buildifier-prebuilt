@@ -17,3 +17,5 @@ build --incompatible_strict_action_env=true
 
 # Allow weird paths for gh/jq
 test --test_env=PATH
+
+test --test_output=errors --test_summary=terse
