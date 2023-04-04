@@ -18,4 +18,8 @@ build --incompatible_strict_action_env=true
 # Allow weird paths for gh/jq
 test --test_env=PATH
 
+# Provide better error output for failed tests.
 test --test_output=errors --test_summary=terse
+
+# Use bzlmod
+common --enable_bzlmod
