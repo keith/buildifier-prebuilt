@@ -1,10 +1,10 @@
+load("@bazel_binaries//:defs.bzl", "bazel_binaries")
 load(
-    "@contrib_rules_bazel_integration_test//bazel_integration_test:defs.bzl",
+    "@rules_bazel_integration_test//bazel_integration_test:defs.bzl",
     "bazel_integration_tests",
     "default_test_runner",
     "integration_test_utils",
 )
-load("//:bazel_versions.bzl", "SUPPORTED_BAZEL_VERSIONS")
 
 # Add test for buildozer
 
@@ -22,7 +22,7 @@ sh_binary(
     testonly = True,
     srcs = ["simple_test_runner.sh"],
     data = [
-        "@contrib_rules_bazel_integration_test//tools:create_scratch_dir",
+        "@rules_bazel_integration_test//tools:create_scratch_dir",
     ],
     deps = [
         "@bazel_tools//tools/bash/runfiles",
@@ -32,7 +32,8 @@ sh_binary(
 
 bazel_integration_tests(
     name = "simple_test",
-    bazel_versions = SUPPORTED_BAZEL_VERSIONS,
+    bazel_binaries = bazel_binaries,
+    bazel_versions = bazel_binaries.versions.all,
     test_runner = ":simple_test_runner",
     workspace_files = integration_test_utils.glob_workspace_files("simple") + [
         "//:local_repository_files",
@@ -42,7 +43,8 @@ bazel_integration_tests(
 
 bazel_integration_tests(
     name = "specify_assets_test",
-    bazel_versions = SUPPORTED_BAZEL_VERSIONS,
+    bazel_binaries = bazel_binaries,
+    bazel_versions = bazel_binaries.versions.all,
     test_runner = ":default_test_runner",
     workspace_files = integration_test_utils.glob_workspace_files("specify_assets") + [
         "//:local_repository_files",
@@ -57,10 +59,10 @@ test_suite(
     tags = integration_test_utils.DEFAULT_INTEGRATION_TEST_TAGS,
     tests = integration_test_utils.bazel_integration_test_names(
         "simple_test",
-        SUPPORTED_BAZEL_VERSIONS,
+        bazel_binaries.versions.all,
     ) + integration_test_utils.bazel_integration_test_names(
         "specify_assets_test",
-        SUPPORTED_BAZEL_VERSIONS,
+        bazel_binaries.versions.all,
     ),
     visibility = ["//:__subpackages__"],
 )
