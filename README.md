@@ -40,6 +40,21 @@ bazel run -- @buildifier_prebuilt//:buildifier ARGS
 
 ## Installation
 
+### Bzlmod: Add `bazel_dep` to `MODULE.bazel` file
+
+<!-- BEGIN MODULE SNIPPET -->
+```python
+bazel_dep(
+    name = "buildifier_prebuilt",
+    version = "6.1.0",
+    dev_dependency = True,
+)
+```
+<!-- END MODULE SNIPPET -->
+
+
+### Legacy: Add declarations to `WORKSPACE` file
+
 Add the following to your `WORKSPACE` file.
 
 <!-- BEGIN WORKSPACE SNIPPET -->
@@ -70,13 +85,13 @@ buildifier_prebuilt_register_toolchains()
 <!-- END WORKSPACE SNIPPET -->
 
 
-### Specify Version of Buildtools
+## Specify Version of Buildtools
 
 By default releases of these rules hardcode the most up to date versions of the tools at release
 time. If you would like to specify a specific version of buildtools to use, you can do one of the
 following.
 
-#### Option 1: Quick and Easy
+### Option 1: Quick and Easy
 
 Update the `buildifier_prebuilt_register_toolchains` declaration in your `WORKSPACE` file to specify
 the version.
@@ -92,7 +107,7 @@ The above example will download version 4.2.5 of the `buildtools` binaries. The 
 that you will see warnings stating that a canonical version can be specified using SHA256 values.
 
 
-#### Option 2: Manually Add SHA256 Values
+### Option 2: Manually Add SHA256 Values
 
 To add SHA256 values to the declaration, add a `sha256_values` attribute and specify the values in a
 `dict` where the key is `<tool>_<platform>_<arch>` and the value is the SHA256 value.
@@ -118,7 +133,7 @@ The downside to this is that you will need to manually download each binary that
 your builds and calculate the SHA256 value.
 
 
-#### Option 3: Quick, Easy and Canonical
+### Option 3: Quick, Easy and Canonical
 
 We have included a utility which will generate a `buildifier_prebuilt_register_toolchains`
 declaration with the appropriate SHA256 values. If you execute it without any arguments, it will

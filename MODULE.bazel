@@ -17,7 +17,7 @@ register_toolchains("@buildifier_prebuilt_toolchains//:all")
 
 bazel_dep(
     name = "cgrindel_bazel_starlib",
-    version = "0.15.0",
+    version = "0.16.0",
     dev_dependency = True,
 )
 bazel_dep(
