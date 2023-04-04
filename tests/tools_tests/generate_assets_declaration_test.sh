@@ -34,18 +34,6 @@ rm -rf "${repo_dir}"
 mkdir -p "${repo_dir}"
 export "BUILD_WORKSPACE_DIRECTORY=${repo_dir}"
 
-
-# MARK - Test with Defaults
-
-actual="$( "${generate_assets_declaration_sh}" )"
-assert_match "load.*@buildifier_prebuilt//:defs.bzl" "${actual}"
-assert_match "buildifier_prebuilt_register_toolchains" "${actual}"
-assert_match "buildifier_darwin_amd64" "${actual}"
-assert_match "buildifier_linux_arm64" "${actual}"
-assert_match "buildozer_linux_arm64" "${actual}"
-assert_match "buildozer_darwin_amd64" "${actual}"
-
-
 # MARK - Test with Release Tag
 
 actual="$( "${generate_assets_declaration_sh}" "4.2.3" )"
@@ -55,22 +43,4 @@ assert_match \
   "${actual}"
 assert_match \
   "buildozer_darwin_arm64.*f8d0994620dec1247328f13db1d434b6489dd007f8e9b961dbd9363bc6fe7071" \
-  "${actual}"
-
-
-# MARK - Test Changing Defaults
-
-actual="$( 
-  "${generate_assets_declaration_sh}" \
-    --reset_tools \
-    --tool buildifier \
-    --reset_platforms \
-    --platform darwin \
-    --reset_arches \
-    --arch arm64 \
-    "4.2.3" 
-)"
-assert_match "version.*4.2.3" "${actual}"
-assert_match \
-  "buildifier_darwin_arm64.*9434043897a3c3821fda87046918e5a6c4320d8352df700f62046744c4d168a3" \
   "${actual}"

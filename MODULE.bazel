@@ -6,7 +6,6 @@ module(
 
 bazel_dep(name = "bazel_skylib", version = "1.3.0")
 bazel_dep(name = "platforms", version = "0.0.5")
-bazel_dep(name = "cgrindel_bazel_starlib", version = "0.15.0")
 
 non_module_deps = use_extension("//:defs.bzl", "buildifier_prebuilt_deps_extension")
 use_repo(
@@ -16,6 +15,11 @@ use_repo(
 
 register_toolchains("@buildifier_prebuilt_toolchains//:all")
 
+bazel_dep(
+    name = "cgrindel_bazel_starlib",
+    version = "0.15.0",
+    dev_dependency = True,
+)
 bazel_dep(
     name = "rules_bazel_integration_test",
     version = "0.12.0",
