@@ -6,7 +6,10 @@ sh_test(
         "//tools:generate_assets_declaration",
     ],
     env_inherit = [
-        "CC",
+        # The HOME, GH_TOKEN, and GITHUB_TOKEN environment variables help the gh utility find
+        # its auth info.
+        "GITHUB_TOKEN",
+        "GH_TOKEN",
         "HOME",
     ],
     deps = [
