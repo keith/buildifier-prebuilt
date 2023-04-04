@@ -1,1 +1,1 @@
-workspace(name = "buildifier_prebuilt")
+# Intentionally blank. Force bzlmod strict mode.
