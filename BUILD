@@ -1,7 +1,7 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
 exports_files(
-    ["runner.bash.template"],
+    ["runner.bash.template", "runner.bat.template"],
     visibility = ["//visibility:public"],
 )
 
@@ -62,6 +62,7 @@ filegroup(
         "MODULE.bazel",
         "WORKSPACE",
         "runner.bash.template",
+        "runner.bat.template",
         "//buildifier:all_files",
         "//buildozer:all_files",
     ] + glob(["*.bzl"]),

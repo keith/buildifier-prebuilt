@@ -1,0 +1,71 @@
+@echo off
+setlocal EnableDelayedExpansion
+
+set BUILDIFIER_SHORT_PATH=@@BUILDIFIER_SHORT_PATH@@
+set EXTRA_ARGS=@@ARGS@@
+set WORKSPACE=@@WORKSPACE@@
+
+REM When --enable_runfiles, we should be able to locate buildifier directly through symlink.
+for %%I in (%BUILDIFIER_SHORT_PATH%) do set "buildifier_short_path=%%~fI"
+
+REM If we can't find it, then parse the MANIFEST file to find buildifier.
+if not exist !buildifier_short_path! (
+    if not exist MANIFEST (
+        echo Runfiles are not enabled, yet a MANIFEST file cannot be found
+        exit /b 1
+    )
+    type MANIFEST
+    for /F "tokens=1" %%F IN ('findstr /L /C:buildifier.exe MANIFEST') DO (
+        set "buildifier_short_path=%%~fF"
+    )
+)
+
+if not exist !buildifier_short_path! (
+    echo Failed to find buildifier at !buildifier_short_path!
+    exit /b 1
+)
+
+if defined TEST_WORKSPACE (
+    if not defined BUILD_WORKSPACE_DIRECTORY (
+        if defined WORKSPACE (
+            cd "%WORKSPACE%"
+        ) else (
+            set follow_links=1
+        )
+    )
+) else (
+    cd "%BUILD_WORKSPACE_DIRECTORY%"
+)
+
+call :collectFiles .
+
+!buildifier_short_path! %EXTRA_ARGS% !files_to_analyze!
+
+exit /b !ERRORLEVEL!
+
+REM Utility function to collect all wanted files.
+REM Exclude patterns are not supported by `dir.exe`.
+:collectFiles
+
+REM First, non-symlinked files
+pushd %~1
+FOR /F %%f IN ('dir /b/a:-d-l-h *.bzl *.sky *.bazel *.BUILD BUILD BUILD.*.oss WORKSPACE WORKSPACE.bzlmod WORKSPACE.oss WORKSPACE.*.oss 2^>nul') DO (
+    REM echo File %~1\%%f
+    set files_to_analyze=!files_to_analyze! %~1\%%f
+)
+popd
+
+REM Next, directories.
+REM
+REM Interestingly, turning on the exclude hidden files option (-h) excludes the
+REM `.git` directory but not other directories starting with a `.` like
+REM `.github` or `.bcr`. I don't know why it works this way, but hey it works.
+if defined follow_links (
+    FOR /F %%d IN ('dir /b/a:d-h %~1 2^>nul') DO (
+        call :collectFiles "%~1\%%d"
+    )
+) else (
+    FOR /F %%d IN ('dir /b/a:d-l-h %~1 2^>nul') DO (
+        call :collectFiles "%~1\%%d"
+    )
+)

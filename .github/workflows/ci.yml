@@ -25,3 +25,11 @@ jobs:
     - uses: ./.github/actions/build_and_test
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  windows_build:
+    runs-on: windows-2019
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ./.github/actions/build_and_test
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}

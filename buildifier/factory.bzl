@@ -47,10 +47,6 @@ def buildifier_attr_factory(*, test_rule):
             doc = "path to JSON file with custom table definitions which will be merged with the built-in tables",
             allow_single_file = True,
         ),
-        "_runner": attr.label(
-            default = "@buildifier_prebuilt//:runner.bash.template",
-            allow_single_file = True,
-        ),
     }
 
     if test_rule:
@@ -137,16 +133,21 @@ def buildifier_impl_factory(ctx, *, test_rule):
             fail("Cannot use 'no_sandbox' without a 'workspace'")
         workspace = ctx.file.workspace.path
 
-    buildifier = ctx.toolchains["@buildifier_prebuilt//buildifier:toolchain"]._tool
-    out_file = ctx.actions.declare_file(ctx.label.name + ".bash")
+    toolchain = ctx.toolchains["@buildifier_prebuilt//buildifier:toolchain"]
+    buildifier = toolchain._tool
+    runner = toolchain._runner
+
+    out_ext = ".bash" if runner.label.name.endswith(".bash.template") else ".bat"
+    out_file = ctx.actions.declare_file(ctx.label.name + out_ext)
+
     substitutions = {
-        "@@ARGS@@": shell.array_literal(args),
-        "@@BUILDIFIER_SHORT_PATH@@": shell.quote(buildifier.short_path),
+        "@@ARGS@@": shell.array_literal(args) if out_ext == ".bash" else shell.array_literal(args)[1:][:-1].replace("'", ""),
+        "@@BUILDIFIER_SHORT_PATH@@": shell.quote(buildifier.path) if out_ext == ".bash" else buildifier.path,
         "@@EXCLUDE_PATTERNS@@": exclude_patterns_str,
         "@@WORKSPACE@@": workspace,
     }
     ctx.actions.expand_template(
-        template = ctx.file._runner,
+        template = runner.files.to_list()[0],
         output = out_file,
         substitutions = substitutions,
         is_executable = True,

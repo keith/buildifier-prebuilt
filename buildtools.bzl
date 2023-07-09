@@ -6,7 +6,7 @@ load("@bazel_skylib//lib:new_sets.bzl", "sets")
 load("@bazel_skylib//lib:types.bzl", "types")
 
 _TOOL_NAMES = ["buildifier", "buildozer"]
-_TYPICAL_PLATFORMS = ["darwin", "linux"]
+_TYPICAL_PLATFORMS = ["windows", "darwin", "linux"]
 _TYPICAL_ARCHES = ["amd64", "arm64"]
 _VALID_TOOL_NAMES = sets.make(_TOOL_NAMES)
 
@@ -33,6 +33,8 @@ def _create_asset(name, platform, arch, version, sha256 = None):
         fail("Expected an arch.")
     if version == None:
         fail("Expected a version.")
+    if arch == "windows" and version == "arm64":
+        fail("arm64 windows executables are not provided by buildifier/buildozer")
     if not sets.contains(_VALID_TOOL_NAMES, name):
         fail("Invalid asset name. {name}".format(name = name))
 
@@ -129,6 +131,9 @@ def _create_assets(
     for name in names:
         for platform in platforms:
             for arch in arches:
+                if platform == "windows" and arch == "arm64":
+                    continue
+
                 uniq_name = _create_unique_name(
                     name = name,
                     platform = platform,
@@ -146,17 +151,19 @@ def _create_assets(
 _DEFAULT_ASSETS = _create_assets(
     version = "6.1.0",
     names = ["buildifier", "buildozer"],
-    platforms = ["darwin", "linux"],
+    platforms = ["windows", "darwin", "linux"],
     arches = ["amd64", "arm64"],
     sha256_values = {
         "buildifier_darwin_amd64": "fc61455f2137c8ea16c299a01cd1d3bfae74edab1da2b97778921691504a2809",
         "buildifier_darwin_arm64": "0eef36edd99798fa4ff7099257a847ecaad96a0ef41a5748e9091cd393ee20bc",
         "buildifier_linux_amd64": "0b51a6cb81bc3b51466ea2210053992654987a907063d0c2b9c03be29de52eff",
         "buildifier_linux_arm64": "5acdd65684105f73d1c65ee4737f6cf388afff8674eb88045aa3c204811b02f3",
+        "buildifier_windows_amd64": "65e9d2978bebb5bcfc82173136af6bd3c66008df0047d596d6f0551e01e7ce24",
         "buildozer_darwin_amd64": "1965924ec64089cd0da36cb91b6576e32ec3800ee60af070ae4458340d54f73e",
         "buildozer_darwin_arm64": "878230d08aebedc16cfd9e18631574b20b8d594d8d44b4aff9bc293c3b1c75d8",
         "buildozer_linux_amd64": "1a68b5e86f337e92dba985c9f1326c088dcc7dfba4298d891c6f9d7072693e28",
         "buildozer_linux_arm64": "8ccb1a20f3c1da5fee31a0f5cb6c20dceca0a685880b64633593844a01066d4b",
+        "buildozer_windows_amd64": "4a3bbc01e08a73da3317f670fddba882246a93573fc047d6c6d51b9a8116c80f",
     },
 )
 
