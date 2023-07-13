@@ -12,12 +12,20 @@ readonly version="$1"
 assets=()
 
 for binary in buildifier buildozer; do
-  for os in darwin linux; do
+  for os in darwin linux windows; do
     for arch in amd64 arm64; do
       filename=$binary-$os-$arch
+      if [[ "$os" == "windows" ]]; then
+        if [[ "$arch" == "arm64" ]]; then
+          continue
+        fi
+
+        filename="$filename.exe"
+      fi
+
       url=https://github.com/bazelbuild/buildtools/releases/download/$version/$filename
       bin=$(mktemp)
-      curl --fail --silent -L "$url" -o "$bin"
+      curl --fail -L "$url" -o "$bin"
       sha=$(shasum -a 256 "$bin" | cut -d ' ' -f 1)
       assets+=("            \"${binary}_${os}_${arch}\": \"$sha\",")
     done
@@ -31,7 +39,7 @@ buildifier_prebuilt_register_toolchains(
     assets = buildtools_assets(
         version = "$version",
         names = ["buildifier", "buildozer"],
-        platforms = ["darwin", "linux"],
+        platforms = ["darwin", "linux", "windows"],
         arches = ["amd64", "arm64"],
         sha256_values = {
 $(printf '%s\n' "${assets[@]}")
