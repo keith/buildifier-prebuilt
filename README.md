@@ -43,7 +43,7 @@ bazel run -- @buildifier_prebuilt//:buildifier ARGS
 ### Bzlmod: Add `bazel_dep` to `MODULE.bazel` file
 
 <!-- BEGIN MODULE SNIPPET -->
-```python
+```bzl
 bazel_dep(
     name = "buildifier_prebuilt",
     version = "6.1.0",
@@ -58,7 +58,7 @@ bazel_dep(
 Add the following to your `WORKSPACE` file.
 
 <!-- BEGIN WORKSPACE SNIPPET -->
-```python
+```bzl
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
@@ -96,7 +96,7 @@ following.
 Update the `buildifier_prebuilt_register_toolchains` declaration in your `WORKSPACE` file to specify
 the version.
 
-```python
+```bzl
 # Use buildtools version 4.2.5.
 buildifier_prebuilt_register_toolchains(
     assets = buildtools_assets(version = "4.2.5"),
@@ -112,7 +112,7 @@ that you will see warnings stating that a canonical version can be specified usi
 To add SHA256 values to the declaration, add a `sha256_values` attribute and specify the values in a
 `dict` where the key is `<tool>_<platform>_<arch>` and the value is the SHA256 value.
 
-```python
+```bzl
 # Use buildtools version 4.2.5.
 buildifier_prebuilt_register_toolchains(
     assets = buildtools_assets(version = "4.2.5"),
