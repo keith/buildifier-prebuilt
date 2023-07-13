@@ -117,25 +117,27 @@ def _create_assets_test(ctx):
 
     # Test use defaults
     assets = buildtools.create_assets(version = "4.2.5")
-    asserts.equals(env, 8, len(assets))
+    # 2 tools * (2 mac arches + 2 linux arches + 1 windows arch)
+    asserts.equals(env, 10, len(assets))
     versions = sets.make([asset.version for asset in assets])
     asserts.true(env, sets.is_equal(versions, sets.make(["4.2.5"])))
     names = sets.make([asset.name for asset in assets])
     asserts.true(env, sets.is_equal(names, sets.make(["buildifier", "buildozer"])))
     platforms = sets.make([asset.platform for asset in assets])
-    asserts.true(env, sets.is_equal(platforms, sets.make(["darwin", "linux"])))
+    asserts.true(env, sets.is_equal(platforms, sets.make(["darwin", "linux", "windows"])))
     arches = sets.make([asset.arch for asset in assets])
     asserts.true(env, sets.is_equal(arches, sets.make(["amd64", "arm64"])))
 
     # Test with custom names
     assets = buildtools.create_assets(version = "4.2.5", names = ["buildifier"])
-    asserts.equals(env, 4, len(assets))
+    # 2 mac arches + 2 linux arches + 1 windows arch
+    asserts.equals(env, 5, len(assets))
     versions = sets.make([asset.version for asset in assets])
     asserts.true(env, sets.is_equal(versions, sets.make(["4.2.5"])))
     names = sets.make([asset.name for asset in assets])
     asserts.true(env, sets.is_equal(names, sets.make(["buildifier"])))
     platforms = sets.make([asset.platform for asset in assets])
-    asserts.true(env, sets.is_equal(platforms, sets.make(["darwin", "linux"])))
+    asserts.true(env, sets.is_equal(platforms, sets.make(["darwin", "linux", "windows"])))
     arches = sets.make([asset.arch for asset in assets])
     asserts.true(env, sets.is_equal(arches, sets.make(["amd64", "arm64"])))
 
@@ -153,13 +155,14 @@ def _create_assets_test(ctx):
 
     # Test with custom arches
     assets = buildtools.create_assets(version = "4.2.5", arches = ["amd64"])
-    asserts.equals(env, 4, len(assets))
+    # 2 tools * 3 oses
+    asserts.equals(env, 6, len(assets))
     versions = sets.make([asset.version for asset in assets])
     asserts.true(env, sets.is_equal(versions, sets.make(["4.2.5"])))
     names = sets.make([asset.name for asset in assets])
     asserts.true(env, sets.is_equal(names, sets.make(["buildifier", "buildozer"])))
     platforms = sets.make([asset.platform for asset in assets])
-    asserts.true(env, sets.is_equal(platforms, sets.make(["darwin", "linux"])))
+    asserts.true(env, sets.is_equal(platforms, sets.make(["darwin", "linux", "windows"])))
     arches = sets.make([asset.arch for asset in assets])
     asserts.true(env, sets.is_equal(arches, sets.make(["amd64"])))
 
@@ -171,6 +174,8 @@ def _create_assets_test(ctx):
         "buildozer_darwin_arm64": "f8d0994620dec1247328f13db1d434b6489dd007f8e9b961dbd9363bc6fe7071",
         "buildifier_linux_amd64": "a19126536bae9a3917a7fc4bdbbf0378371a1d1683ab2415857cf53bce9dee49",
         "buildozer_linux_amd64": "6b4177321b770fb788b618caa453d34561b8c05081ae8b27657e527c2a3b5d52",
+        "buildifier_windows_amd64": "2956b54eb991d2b5050bb0141b700cb6af610eb1e87a1aa1b899526100d50e97",
+        "buildozer_windows_amd64": "9075d512e96a7b95225539d3dfbf42c4ad9ac9f6097c0420c9d8ea0a49a0a058",
     })
     target = None
     for asset in assets:
@@ -184,6 +189,11 @@ def _create_assets_test(ctx):
             target = asset
             break
     asserts.equals(env, "6b4177321b770fb788b618caa453d34561b8c05081ae8b27657e527c2a3b5d52", target.sha256)
+    for asset in assets:
+        if asset.name == "buildifier" and asset.platform == "windows" and asset.arch == "amd64":
+            target = asset
+            break
+    asserts.equals(env, "2956b54eb991d2b5050bb0141b700cb6af610eb1e87a1aa1b899526100d50e97", target.sha256)
 
     return unittest.end(env)
 

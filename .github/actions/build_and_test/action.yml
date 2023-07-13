@@ -14,14 +14,16 @@ runs:
         # The tests make use of Github-specific functionality (e.g. gh).
         GITHUB_TOKEN: ${{ inputs.github_token }}
       run: |
-        bazelisk test //...
-        bazelisk test //... --enable_bzlmod
+        bazelisk test ... --test_output=errors
+        bazelisk test ... --test_output=errors --enable_bzlmod
 
     - name: Execute Integration Tests
       shell: bash
+      # Bazel-in-Bazel still has issues with runfiles
+      if: runner.os != 'Windows'
       env:
         # The tests make use of Github-specific functionality (e.g. gh).
         GITHUB_TOKEN: ${{ inputs.github_token }}
       run: |
-        bazelisk test //:all_integration_tests
-        bazelisk test //:all_integration_tests --enable_bzlmod
+        bazelisk test :all_integration_tests --test_output=errors
+        bazelisk test :all_integration_tests --test_output=errors --enable_bzlmod

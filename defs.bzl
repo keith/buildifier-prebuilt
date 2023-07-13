@@ -13,7 +13,7 @@ def _buildifier_toolchain_setup_impl(repository_ctx):
         content += """
 declare_toolchain(
     tool_name = "{tool_name}",
-    tool = "@{uniq_name}//file:{tool_name}",
+    tool = "@{uniq_name}//file:{tool_name}{ext}",
     os = "{platform}",
     arch = "{arch}",
 )
@@ -21,6 +21,7 @@ declare_toolchain(
 """.format(
             uniq_name = buildtools.create_unique_name(asset),
             tool_name = asset.name,
+            ext = ".exe" if asset.platform == "windows" else "",
             platform = asset.platform,
             arch = asset.arch,
         )
@@ -53,17 +54,19 @@ def buildifier_prebuilt_register_toolchains(
     toolchain_names = []
     for asset in assets:
         http_file_name = buildtools.create_unique_name(asset = asset)
+        http_file_ext = ".exe" if asset.platform == "windows" else ""
         http_file_args = {
             "name": http_file_name,
             "urls": [
-                "https://github.com/bazelbuild/buildtools/releases/download/{version}/{name}-{platform}-{arch}".format(
+                "https://github.com/bazelbuild/buildtools/releases/download/{version}/{name}-{platform}-{arch}{ext}".format(
                     version = asset.version,
                     name = asset.name,
                     platform = asset.platform,
                     arch = asset.arch,
+                    ext = http_file_ext
                 ),
             ],
-            "downloaded_file_path": asset.name,
+            "downloaded_file_path": asset.name + http_file_ext,
             "executable": True,
         }
         if asset.sha256:
