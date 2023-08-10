@@ -105,8 +105,8 @@ def buildifier_impl_factory(ctx, *, test_rule):
 
     if len(ctx.attr.lint_warnings) > 0 and not ctx.attr.lint_mode:
         fail("Cannot pass 'lint_warnings' without a 'lint_mode'")
-    for warning in ctx.attr.lint_warnings:
-        args.append("--warnings={}".format(warning))
+    if ctx.attr.lint_warnings:
+        args.append("--warnings={}".format(",".join(ctx.attr.lint_warnings)))
 
     if ctx.attr.multi_diff:
         args.append("-multi_diff")
