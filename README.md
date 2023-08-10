@@ -43,10 +43,10 @@ bazel run -- @buildifier_prebuilt//:buildifier ARGS
 ### Bzlmod: Add `bazel_dep` to `MODULE.bazel` file
 
 <!-- BEGIN MODULE SNIPPET -->
-```bzl
+```python
 bazel_dep(
     name = "buildifier_prebuilt",
-    version = "6.1.2",
+    version = "6.1.2.1",
     dev_dependency = True,
 )
 ```
@@ -58,15 +58,15 @@ bazel_dep(
 Add the following to your `WORKSPACE` file.
 
 <!-- BEGIN WORKSPACE SNIPPET -->
-```bzl
+```python
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "buildifier_prebuilt",
-    sha256 = "29a50ea545810dc077c408d520eb83e9de3eecfe6395e89cb07149d903fc31e5",
-    strip_prefix = "buildifier-prebuilt-6.1.2",
+    sha256 = "41d57362ee8f351b10d9313239bb4cbc6152fdc04aa86e63007a1b843ad33f4d",
+    strip_prefix = "buildifier-prebuilt-6.1.2.1",
     urls = [
-        "http://github.com/keith/buildifier-prebuilt/archive/6.1.2.tar.gz",
+        "http://github.com/keith/buildifier-prebuilt/archive/6.1.2.1.tar.gz",
     ],
 )
 
