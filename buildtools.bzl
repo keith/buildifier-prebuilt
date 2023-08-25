@@ -149,21 +149,21 @@ def _create_assets(
     return assets
 
 _DEFAULT_ASSETS = _create_assets(
-    version = "v6.1.2",
+    version = "v6.3.3",
     names = ["buildifier", "buildozer"],
     platforms = ["darwin", "linux", "windows"],
     arches = ["amd64", "arm64"],
     sha256_values = {
-        "buildifier_darwin_amd64": "e2f4a67691c5f55634fbfb3850eb97dd91be0edd059d947b6c83d120682e0216",
-        "buildifier_darwin_arm64": "7549b5f535219ac957aa2a6069d46fbfc9ea3f74abd85fd3d460af4b1a2099a6",
-        "buildifier_linux_amd64": "51bc947dabb7b14ec6fb1224464fbcf7a7cb138f1a10a3b328f00835f72852ce",
-        "buildifier_linux_arm64": "0ba6e8e3208b5a029164e542ddb5509e618f87b639ffe8cc2f54770022853080",
-        "buildifier_windows_amd64": "92bdd284fbc6766fc3e300b434ff9e68ac4d76a06cb29d1bdefe79a102a8d135",
-        "buildozer_darwin_amd64": "4014751a4cc5e91a7dc4b64be7b30c565bd9014ae6d1879818dc624562a1d431",
-        "buildozer_darwin_arm64": "e78bd5357f2356067d4b0d49ec4e4143dd9b1308746afc6ff11b55b952f462d7",
-        "buildozer_linux_amd64": "2aef0f1ef80a0140b8fe6e6a8eb822e14827d8855bfc6681532c7530339ea23b",
-        "buildozer_linux_arm64": "586e27630cbc242e8bd6fe8e24485eca8dcadea6410cc13cbe059202655980ac",
-        "buildozer_windows_amd64": "07664d5d08ee099f069cd654070cabf2708efaae9f52dc83921fa400c67a868b",
+        "buildifier_darwin_amd64": "3c36a3217bd793815a907a8e5bf81c291e2d35d73c6073914640a5f42e65f73f",
+        "buildifier_darwin_arm64": "9bb366432d515814766afcf6f9010294c13876686fbbe585d5d6b4ff0ca3e982",
+        "buildifier_linux_amd64": "42f798ec532c58e34401985043e660cb19d5ae994e108d19298c7d229547ffca",
+        "buildifier_linux_arm64": "6a03a1cf525045cb686fc67cd5d64cface5092ebefca3c4c93fb6e97c64e07db",
+        "buildifier_windows_amd64": "2761bebc7392d47c2862c43d85201d93efa57249ed09405fd82708867caa787b",
+        "buildozer_darwin_amd64": "9b0bbecb3745250e5ad5a9c36da456699cb55e52999451c3c74047d2b1f0085f",
+        "buildozer_darwin_arm64": "085928dd4deffa1a7fd38c66c4475e37326b2d4942408e8e3d993953ae4c626c",
+        "buildozer_linux_amd64": "1dcdc668d7c775e5bca2d43ac37e036468ca4d139a78fe48ae207d41411c5100",
+        "buildozer_linux_arm64": "94b96d6a3c52d6ef416f0eb96c8a9fe7f6a0757f0458cc8cf190dfc4a5c2d8e7",
+        "buildozer_windows_amd64": "fc1c4f5de391ec6d66f2119c5bd6131d572ae35e92ddffe720e42b619ab158e0",
     },
 )
 
