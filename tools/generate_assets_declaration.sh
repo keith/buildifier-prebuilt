@@ -25,7 +25,11 @@ for binary in buildifier buildozer; do
 
       url=https://github.com/bazelbuild/buildtools/releases/download/$version/$filename
       bin=$(mktemp)
-      curl --fail -L "$url" -o "$bin"
+      if ! curl --fail -L "$url" -o "$bin"; then
+        echo "error: failed to download $url"
+        exit 1
+      fi
+
       sha=$(shasum -a 256 "$bin" | cut -d ' ' -f 1)
       assets+=("            \"${binary}_${os}_${arch}\": \"$sha\",")
     done
