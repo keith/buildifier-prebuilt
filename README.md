@@ -46,7 +46,7 @@ bazel run -- @buildifier_prebuilt//:buildifier ARGS
 ```python
 bazel_dep(
     name = "buildifier_prebuilt",
-    version = "6.1.2.2",
+    version = "6.3.3",
     dev_dependency = True,
 )
 ```
@@ -63,10 +63,10 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "buildifier_prebuilt",
-    sha256 = "3f59ba4942652771805fa0c335b7cb0d8ee837184359c8dc1f168394c785eefc",
-    strip_prefix = "buildifier-prebuilt-6.1.2.2",
+    sha256 = "72b5bb0853aac597cce6482ee6c62513318e7f2c0050bc7c319d75d03d8a3875",
+    strip_prefix = "buildifier-prebuilt-6.3.3",
     urls = [
-        "http://github.com/keith/buildifier-prebuilt/archive/6.1.2.2.tar.gz",
+        "http://github.com/keith/buildifier-prebuilt/archive/6.3.3.tar.gz",
     ],
 )
 
