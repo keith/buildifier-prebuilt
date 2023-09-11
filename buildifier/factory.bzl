@@ -27,6 +27,10 @@ def buildifier_attr_factory(*, test_rule):
             doc = "Formatting mode",
             values = ["check", "diff", "print_if_changed"] + ["fix"] if not test_rule else [],
         ),
+        "format": attr.string(
+            doc = "Dianostics format. Buildifier always returns 0 if this is set.",
+            values = ["json", "text"],
+        ),
         "lint_mode": attr.string(
             doc = "Linting mode",
             values = ["", "warn"] + ["fix"] if not test_rule else [],
@@ -99,6 +103,11 @@ def buildifier_impl_factory(ctx, *, test_rule):
         "-mode=%s" % ctx.attr.mode,
         "-v=%s" % str(ctx.attr.verbose).lower(),
     ]
+
+    if ctx.attr.format:
+        if ctx.attr.mode != "check":
+            fail("Cannot pass 'format' without 'mode = \"check\"'")
+        args.append("-format=%s" % ctx.attr.format)
 
     if ctx.attr.lint_mode:
         args.append("-lint=%s" % ctx.attr.lint_mode)
