@@ -7,9 +7,10 @@ module(
 bazel_dep(name = "bazel_skylib", version = "1.3.0")
 bazel_dep(name = "platforms", version = "0.0.5")
 
-non_module_deps = use_extension("//:defs.bzl", "buildifier_prebuilt_deps_extension")
+buildifier_prebuilt = use_extension("//:defs.bzl", "buildifier_prebuilt_deps_extension")
+buildifier_prebuilt.toolchains()
 use_repo(
-    non_module_deps,
+    buildifier_prebuilt,
     "buildifier_prebuilt_toolchains",
 )
 
