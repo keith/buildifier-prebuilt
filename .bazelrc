@@ -23,3 +23,6 @@ test --test_output=errors --test_summary=terse
 
 # Use bzlmod
 common --enable_bzlmod
+
+# Enable symlinks on windows
+startup --windows_enable_symlinks
