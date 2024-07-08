@@ -9,7 +9,7 @@ on:
 
 jobs:
   macos_build:
-    runs-on: macos-11.0
+    runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
     - uses: ./.github/actions/build_and_test
