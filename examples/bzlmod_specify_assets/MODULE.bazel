@@ -1,0 +1,29 @@
+module(
+    name = "bzlmod_example",
+    version = "0.0.0",
+)
+
+bazel_dep(name = "buildifier_prebuilt", version = "0.0.0")
+local_path_override(
+    module_name = "buildifier_prebuilt",
+    path = "../..",
+)
+
+buildifier_prebuilt = use_extension("@buildifier_prebuilt//:defs.bzl", "buildifier_prebuilt_deps_extension")
+buildifier_prebuilt.toolchains(
+    sha256_values = {
+        "buildifier_darwin_amd64": "757f246040aceb2c9550d02ef5d1f22d3ef1ff53405fe76ef4c6239ef1ea2cc1",
+        "buildifier_darwin_arm64": "4cf02e051f6cda18765935cb6e77cc938cf8b405064589a50fe9582f82c7edaf",
+        "buildifier_linux_amd64": "f94e71b22925aff76ce01a49e1c6c6d31f521bbbccff047b81f2ea01fd01a945",
+        "buildifier_linux_arm64": "2113d79e45efb51e2b3013c8737cb66cadae3fd89bd7e820438cb06201e50874",
+        "buildozer_darwin_amd64": "3fe671620e6cb7d2386f9da09c1de8de88b02b9dd9275cdecd8b9e417f74df1b",
+        "buildozer_darwin_arm64": "ff4d297023fe3e0fd14113c78f04cef55289ca5bfe5e45a916be738b948dc743",
+        "buildozer_linux_amd64": "e8e39b71c52318a9030dd9fcb9bbfd968d0e03e59268c60b489e6e6fc1595d7b",
+        "buildozer_linux_arm64": "96227142969540def1d23a9e8225524173390d23f3d7fd56ce9c4436953f02fc",
+    },
+    version = "4.2.5",
+)
+use_repo(
+    buildifier_prebuilt,
+    "buildifier_prebuilt_toolchains",
+)
