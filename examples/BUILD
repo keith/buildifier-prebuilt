@@ -33,6 +33,7 @@ sh_binary(
 
 _ALL_EXAMPLES = [
     "bzlmod",
+    "bzlmod_specify_assets",
     "simple",
     "specify_assets",
 ]
@@ -44,6 +45,7 @@ _EXAMPLE_RUNNERS = {
 
 _EXAMPLE_BAZEL_VERSIONS = {
     "bzlmod": [bazel_binaries.versions.current],
+    "bzlmod_specify_assets": [bazel_binaries.versions.current],
 }
 
 [
