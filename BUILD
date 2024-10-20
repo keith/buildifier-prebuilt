@@ -1,7 +1,7 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
 exports_files(
-    ["runner.bash.template", "runner.bat.template"],
+    ["runner.bash.template", "runner.bat.template", "WORKSPACE"],
     visibility = ["//visibility:public"],
 )
 
