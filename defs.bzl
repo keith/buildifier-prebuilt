@@ -63,7 +63,7 @@ def buildifier_prebuilt_register_toolchains(
                     name = asset.name,
                     platform = asset.platform,
                     arch = asset.arch,
-                    ext = http_file_ext
+                    ext = http_file_ext,
                 ),
             ],
             "downloaded_file_path": asset.name + http_file_ext,
@@ -89,7 +89,46 @@ def buildifier_prebuilt_register_toolchains(
 buildtools_asset = buildtools.create_asset
 buildtools_assets = buildtools.create_assets
 
-def _impl(_):
-    buildifier_prebuilt_register_toolchains(register_toolchains = False)
+def _buildifier_prebuilt_deps_extension_impl(module_ctx):
+    registrations = {}
+    for mod in module_ctx.modules:
+        for toolchains in mod.tags.toolchains:
+            if toolchains.name in registrations:
+                continue
+            registrations[toolchains.name] = True
+            if not toolchains.version:
+                assets = buildtools.DEFAULT_ASSETS
+            else:
+                kwargs = {}
+                if toolchains.names:
+                    kwargs["names"] = toolchains.names
+                if toolchains.platforms:
+                    kwargs["platforms"] = toolchains.platforms
+                if toolchains.arches:
+                    kwargs["arches"] = toolchains.arches
+                if toolchains.sha256_values:
+                    kwargs["sha256_values"] = toolchains.sha256_values
+                assets = buildtools_assets(
+                    version = toolchains.version,
+                    **kwargs
+                )
+            buildifier_prebuilt_register_toolchains(
+                name = toolchains.name,
+                assets = assets,
+                register_toolchains = toolchains.register,
+            )
 
-buildifier_prebuilt_deps_extension = module_extension(implementation = _impl)
+buildifier_prebuilt_deps_extension = module_extension(
+    implementation = _buildifier_prebuilt_deps_extension_impl,
+    tag_classes = {
+        "toolchains": tag_class(attrs = {
+            "name": attr.string(doc = "The name of the repository used for the toolchains.", default = "buildifier_prebuilt_toolchains"),
+            "version": attr.string(doc = "The buildtools version string."),
+            "names": attr.string_list(doc = "A list of tools to include."),
+            "platforms": attr.string_list(doc = "A list of platforms to include."),
+            "arches": attr.string_list(doc = "A list of arches to include."),
+            "sha256_values": attr.string_dict(doc = "A dict of asset name to sha256."),
+            "register": attr.bool(doc = "Whether to register the toolchains."),
+        }),
+    },
+)
