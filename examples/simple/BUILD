@@ -12,10 +12,30 @@ buildifier(
     mode = "diff",
 )
 
+buildifier(
+    name = "buildifier.fix",
+    exclude_patterns = [
+        "./.git/*",
+    ],
+    lint_mode = "fix",
+    lint_warnings = [
+        "-cc-native",
+    ],
+    mode = "fix",
+)
+
 buildifier_test(
     name = "buildifier.test",
     srcs = ["BUILD"],
     lint_mode = "warn",
+)
+
+buildifier_test(
+    name = "buildifier.test.workspace",
+    srcs = ["BUILD"],
+    lint_mode = "warn",
+    no_sandbox = True,
+    workspace = "WORKSPACE",
 )
 
 sh_binary(
