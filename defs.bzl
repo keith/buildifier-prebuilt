@@ -2,6 +2,7 @@
 Binary buildifier / buildozer setup
 """
 
+load("@bazel_features//:features.bzl", "bazel_features")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
 load("//:buildtools.bzl", "buildtools")
 
@@ -108,6 +109,7 @@ def _buildifier_prebuilt_deps_extension_impl(module_ctx):
                     kwargs["arches"] = toolchains.arches
                 if toolchains.sha256_values:
                     kwargs["sha256_values"] = toolchains.sha256_values
+
                 assets = buildtools_assets(
                     version = toolchains.version,
                     **kwargs
@@ -117,6 +119,11 @@ def _buildifier_prebuilt_deps_extension_impl(module_ctx):
                 assets = assets,
                 register_toolchains = toolchains.register,
             )
+
+    if bazel_features.external_deps.extension_metadata_has_reproducible:
+        module_ctx.extension_metadata(reproducible = True)
+
+    return None
 
 buildifier_prebuilt_deps_extension = module_extension(
     implementation = _buildifier_prebuilt_deps_extension_impl,

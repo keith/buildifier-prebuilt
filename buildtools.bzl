@@ -124,8 +124,8 @@ def _create_assets(
         fail("Expected a non-empty list for platforms.")
     if arches == None or arches == []:
         fail("Expected a non-empty list for arches.")
-    if sha256_values == None:
-        sha256_values = {}
+    if sha256_values == None or sha256_values == {}:
+        fail("Expected a non-empty dict for sha256v_alues.")
 
     assets = []
     for name in names:
@@ -144,7 +144,7 @@ def _create_assets(
                     platform = platform,
                     arch = arch,
                     version = version,
-                    sha256 = sha256_values.get(uniq_name),
+                    sha256 = sha256_values.get(uniq_name) or fail("Missing required sha256 for {}", uniq_name),
                 ))
     return assets
 
