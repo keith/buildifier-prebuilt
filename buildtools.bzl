@@ -125,7 +125,7 @@ def _create_assets(
     if arches == None or arches == []:
         fail("Expected a non-empty list for arches.")
     if sha256_values == None or sha256_values == {}:
-        fail("Expected a non-empty dict for sha256v_alues.")
+        fail("Expected a non-empty dict for sha256_values.")
 
     assets = []
     for name in names:
