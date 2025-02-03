@@ -144,7 +144,7 @@ def _create_assets(
                     platform = platform,
                     arch = arch,
                     version = version,
-                    sha256 = sha256_values.get(uniq_name) or fail("Missing required sha256 for {}", uniq_name),
+                    sha256 = sha256_values.get(uniq_name) or fail("Missing required sha256 for {}".format(uniq_name)),
                 ))
     return assets
 
