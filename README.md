@@ -91,7 +91,33 @@ By default releases of these rules hardcode the most up to date versions of the 
 time. If you would like to specify a specific version of buildtools to use, you can do one of the
 following.
 
-### Option 1: Manually Add SHA256 Values
+### Option 1: Quick and Easy
+
+Update the `buildifier_prebuilt_register_toolchains` declaration in your `WORKSPACE` file to specify
+the version.
+
+```bzl
+# Use buildtools version 4.2.5.
+
+# Bzlmod
+buildifier_prebuilt = use_extension("//:defs.bzl", "buildifier_prebuilt_deps_extension")
+buildifier_prebuilt.toolchains(version = "4.2.5")
+use_repo(
+    buildifier_prebuilt,
+    "buildifier_prebuilt_toolchains",
+)
+
+# Workspace
+buildifier_prebuilt_register_toolchains(
+    assets = buildtools_assets(version = "4.2.5"),
+)
+```
+
+The above example will download version 4.2.5 of the `buildtools` binaries. The only downside is
+that you will see warnings stating that a canonical version can be specified using SHA256 values.
+
+
+### Option 2: Manually Add SHA256 Values
 
 To add SHA256 values to the declaration, add a `sha256_values` attribute and specify the values in a
 `dict` where the key is `<tool>_<platform>_<arch>` and the value is the SHA256 value.
@@ -139,7 +165,7 @@ The downside to this is that you will need to manually download each binary that
 your builds and calculate the SHA256 value.
 
 
-### Option 2: Quick, Easy and Canonical
+### Option 3: Quick, Easy and Canonical
 
 We have included a utility which will generate a `buildifier_prebuilt_register_toolchains`
 declaration with the appropriate SHA256 values. If you execute it without any arguments, it will

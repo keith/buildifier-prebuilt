@@ -109,7 +109,6 @@ def _buildifier_prebuilt_deps_extension_impl(module_ctx):
                     kwargs["arches"] = toolchains.arches
                 if toolchains.sha256_values:
                     kwargs["sha256_values"] = toolchains.sha256_values
-
                 assets = buildtools_assets(
                     version = toolchains.version,
                     **kwargs

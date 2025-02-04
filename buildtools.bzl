@@ -10,7 +10,7 @@ _TYPICAL_PLATFORMS = ["windows", "darwin", "linux"]
 _TYPICAL_ARCHES = ["amd64", "arm64"]
 _VALID_TOOL_NAMES = sets.make(_TOOL_NAMES)
 
-def _create_asset(name, platform, arch, version, sha256):
+def _create_asset(name, platform, arch, version, sha256 = None):
     """Create a `struct` representing a buildtools asset.
 
     Args:
@@ -19,7 +19,7 @@ def _create_asset(name, platform, arch, version, sha256):
         platform: The platform as a `string`. (e.g. `linux`, `darwin`)
         arch: The arch as a `string`. (e.g. `amd64`, `arm64`)
         version: The version as a `string`. (e.g. `4.2.3`)
-        sha256: The sha256 as a `string`.
+        sha256: Optional. The sha256 as a `string`.
 
 
     Returns:
@@ -35,8 +35,6 @@ def _create_asset(name, platform, arch, version, sha256):
         fail("Expected a version.")
     if arch == "windows" and version == "arm64":
         fail("arm64 windows executables are not provided by buildifier/buildozer")
-    if sha256 == None:
-        fail("Expected a sha256.")
     if not sets.contains(_VALID_TOOL_NAMES, name):
         fail("Invalid asset name. {name}".format(name = name))
 
@@ -126,8 +124,8 @@ def _create_assets(
         fail("Expected a non-empty list for platforms.")
     if arches == None or arches == []:
         fail("Expected a non-empty list for arches.")
-    if sha256_values == None or sha256_values == {}:
-        fail("Expected a non-empty dict for sha256_values.")
+    if sha256_values == None:
+        sha256_values = {}
 
     assets = []
     for name in names:
@@ -146,7 +144,7 @@ def _create_assets(
                     platform = platform,
                     arch = arch,
                     version = version,
-                    sha256 = sha256_values.get(uniq_name) or fail("Missing required sha256 for {}".format(uniq_name)),
+                    sha256 = sha256_values.get(uniq_name),
                 ))
     return assets
 
