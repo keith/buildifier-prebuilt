@@ -19,7 +19,6 @@ def _buildifier_impl(ctx):
 buildifier = rule(
     implementation = _buildifier_impl,
     attrs = buildifier_attr_factory(test_rule = False),
-    toolchains = ["@buildifier_prebuilt//buildifier:toolchain"],
     executable = True,
 )
 
@@ -29,7 +28,6 @@ def _buildifier_test_impl(ctx):
 _buildifier_test = rule(
     implementation = _buildifier_test_impl,
     attrs = buildifier_attr_factory(test_rule = True),
-    toolchains = ["@buildifier_prebuilt//buildifier:toolchain"],
     test = True,
 )
 

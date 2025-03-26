@@ -51,6 +51,18 @@ def buildifier_attr_factory(*, test_rule):
             doc = "path to JSON file with custom table definitions which will be merged with the built-in tables",
             allow_single_file = True,
         ),
+        "_buildifier_binary": attr.label(
+            doc = "Buildifier executable",
+            allow_single_file = True,
+            executable = True,
+            cfg = "target",
+            default = Label("//buildifier:current_buildifier_binary"),
+        ),
+        "_buildifier_runner": attr.label(
+            doc = "Wrapper script template for running the buildifier executable",
+            allow_single_file = True,
+            default = Label("//buildifier:current_buildifier_runner"),
+        ),
     }
 
     if test_rule:
@@ -142,11 +154,10 @@ def buildifier_impl_factory(ctx, *, test_rule):
             fail("Cannot use 'no_sandbox' without a 'workspace'")
         workspace = ctx.file.workspace.path
 
-    toolchain = ctx.toolchains["@buildifier_prebuilt//buildifier:toolchain"]
-    buildifier = toolchain._tool
-    runner = toolchain._runner
+    buildifier = ctx.executable._buildifier_binary
+    runner = ctx.file._buildifier_runner
 
-    out_ext = ".bash" if runner.label.name.endswith(".bash.template") else ".bat"
+    out_ext = ".bash" if runner.basename.endswith(".bash.template") else ".bat"
     out_file = ctx.actions.declare_file(ctx.label.name + out_ext)
 
     substitutions = {
@@ -156,7 +167,7 @@ def buildifier_impl_factory(ctx, *, test_rule):
         "@@WORKSPACE@@": workspace,
     }
     ctx.actions.expand_template(
-        template = runner.files.to_list()[0],
+        template = runner,
         output = out_file,
         substitutions = substitutions,
         is_executable = True,
