@@ -1,5 +1,5 @@
 """
-Simple rule for running buildifier from the toolchain config
+Simple rule for providing buildifier fro the target platform from the toolchain config
 """
 
 def _buildifier_binary(ctx):
@@ -19,8 +19,21 @@ def _buildifier_binary(ctx):
     ]
 
 buildifier_binary = rule(
+    doc = "Expose the current target platform's buildifier binary",
     implementation = _buildifier_binary,
     attrs = {},
     toolchains = ["@buildifier_prebuilt//buildifier:toolchain"],
     executable = True,
+)
+
+def _buildifier_runner(ctx):
+    return DefaultInfo(
+        files = ctx.toolchains["@buildifier_prebuilt//buildifier:toolchain"]._runner.files,
+    )
+
+buildifier_runner = rule(
+    doc = "Expose the current target platform's buildifier runner template",
+    implementation = _buildifier_runner,
+    attrs = {},
+    toolchains = ["@buildifier_prebuilt//buildifier:toolchain"],
 )
