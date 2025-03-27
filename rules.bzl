@@ -3,12 +3,12 @@ Rules to use the prebuilt buildifier / buildozer binaries
 """
 
 load("//buildifier:buildifier_binary.bzl", _buildifier_binary = "buildifier_binary")
-load("//buildozer:buildozer_binary.bzl", _buildozer_binary = "buildozer_binary")
 load(
     "//buildifier:factory.bzl",
     "buildifier_attr_factory",
     "buildifier_impl_factory",
 )
+load("//buildozer:buildozer_binary.bzl", _buildozer_binary = "buildozer_binary")
 
 buildifier_binary = _buildifier_binary
 buildozer_binary = _buildozer_binary

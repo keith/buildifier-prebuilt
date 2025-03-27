@@ -1,3 +1,5 @@
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
+
 sh_test(
     name = "generate_assets_declaration_test",
     size = "medium",
@@ -12,12 +14,12 @@ sh_test(
         "GH_TOKEN",
         "HOME",
     ],
-    deps = [
-        "@bazel_tools//tools/bash/runfiles",
-        "@cgrindel_bazel_starlib//shlib/lib:assertions",
-    ],
     target_compatible_with = select({
         "@platforms//os:windows": ["@platforms//:incompatible"],
         "//conditions:default": [],
     }),
+    deps = [
+        "@bazel_tools//tools/bash/runfiles",
+        "@cgrindel_bazel_starlib//shlib/lib:assertions",
+    ],
 )
