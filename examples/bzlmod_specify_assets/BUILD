@@ -1,4 +1,5 @@
 load("@buildifier_prebuilt//:rules.bzl", "buildifier", "buildifier_test")
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
 
 buildifier(
     name = "buildifier.check",

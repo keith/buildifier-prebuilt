@@ -8,3 +8,5 @@ local_path_override(
     module_name = "buildifier_prebuilt",
     path = "../..",
 )
+
+bazel_dep(name = "rules_shell", version = "0.4.0")

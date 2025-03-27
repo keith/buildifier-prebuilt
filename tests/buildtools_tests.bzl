@@ -2,8 +2,8 @@
 Unit test setup
 """
 
-load("@bazel_skylib//lib:unittest.bzl", "asserts", "unittest")
 load("@bazel_skylib//lib:new_sets.bzl", "sets")
+load("@bazel_skylib//lib:unittest.bzl", "asserts", "unittest")
 load("//:buildtools.bzl", "buildtools")
 
 def _create_asset_test(ctx):
@@ -117,6 +117,7 @@ def _create_assets_test(ctx):
 
     # Test use defaults
     assets = buildtools.create_assets(version = "4.2.5")
+
     # 2 tools * (2 mac arches + 2 linux arches + 1 windows arch)
     asserts.equals(env, 10, len(assets))
     versions = sets.make([asset.version for asset in assets])
@@ -130,6 +131,7 @@ def _create_assets_test(ctx):
 
     # Test with custom names
     assets = buildtools.create_assets(version = "4.2.5", names = ["buildifier"])
+
     # 2 mac arches + 2 linux arches + 1 windows arch
     asserts.equals(env, 5, len(assets))
     versions = sets.make([asset.version for asset in assets])
@@ -155,6 +157,7 @@ def _create_assets_test(ctx):
 
     # Test with custom arches
     assets = buildtools.create_assets(version = "4.2.5", arches = ["amd64"])
+
     # 2 tools * 3 oses
     asserts.equals(env, 6, len(assets))
     versions = sets.make([asset.version for asset in assets])

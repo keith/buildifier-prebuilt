@@ -6,6 +6,7 @@ load(
     "default_test_runner",
     "integration_test_utils",
 )
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 
 # Add test for buildozer
 

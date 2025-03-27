@@ -1,6 +1,6 @@
 matrix:
   platform: ["macos", "ubuntu2004"]
-  bazel: ["7.x", "6.x"]
+  bazel: ["7.x", "8.x"]
 
 tasks:
   verify_targets:
@@ -15,7 +15,7 @@ bcr_test_module:
   module_path: ""
   matrix:
     platform: ["macos", "ubuntu2004"]
-    bazel: ["7.x", "6.x"]
+    bazel: ["7.x", "8.x"]
   tasks:
     run_test_module:
       name: "Run test module"

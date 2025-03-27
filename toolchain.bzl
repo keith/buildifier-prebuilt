@@ -26,7 +26,7 @@ prebuilt_toolchain = rule(
             allow_single_file = True,
             mandatory = False,
             doc = "The templated runner script for the executable, if needed",
-        )
+        ),
     },
     provides = [platform_common.ToolchainInfo],
 )
@@ -47,7 +47,7 @@ def declare_toolchain(tool_name, tool, os, arch):  # buildifier: disable=unnamed
     prebuilt_toolchain(
         name = name,
         tool = tool,
-        runner = buildifier_runner if tool_name == "buildifier" else None
+        runner = buildifier_runner if tool_name == "buildifier" else None,
     )
 
     if os == "darwin":
