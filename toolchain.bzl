@@ -60,7 +60,7 @@ def declare_toolchain(tool_name, tool, os, arch):  # buildifier: disable=unnamed
         toolchain_type = "@buildifier_prebuilt//{tool}:toolchain".format(
             tool = tool_name,
         ),
-        exec_compatible_with = [
+        target_compatible_with = [
             "@platforms//os:{}".format(os),
             "@platforms//cpu:{}".format(arch),
         ],

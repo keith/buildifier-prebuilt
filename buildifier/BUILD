@@ -1,7 +1,8 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load(
-    "@buildifier_prebuilt//:rules.bzl",
+    ":buildifier_binary.bzl",
     "buildifier_binary",
+    "buildifier_runner",
 )
 
 bzl_library(
@@ -16,7 +17,18 @@ toolchain_type(
 )
 
 buildifier_binary(
+    name = "current_buildifier_binary",
+    visibility = ["//visibility:public"],
+)
+
+alias(
     name = "buildifier",
+    actual = ":current_buildifier_binary",
+    visibility = ["//visibility:public"],
+)
+
+buildifier_runner(
+    name = "current_buildifier_runner",
     visibility = ["//visibility:public"],
 )
 
