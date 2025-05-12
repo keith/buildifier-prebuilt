@@ -2,6 +2,7 @@
 Rules to use the prebuilt buildifier / buildozer binaries
 """
 
+load("@platforms//host:constraints.bzl", "HOST_CONSTRAINTS")
 load("//buildifier:buildifier_binary.bzl", _buildifier_binary = "buildifier_binary")
 load(
     "//buildifier:factory.bzl",
@@ -19,6 +20,7 @@ def _buildifier_impl(ctx):
 buildifier = rule(
     implementation = _buildifier_impl,
     attrs = buildifier_attr_factory(test_rule = False),
+    exec_compatible_with = HOST_CONSTRAINTS,
     toolchains = ["@buildifier_prebuilt//buildifier:toolchain"],
     executable = True,
 )
@@ -29,6 +31,7 @@ def _buildifier_test_impl(ctx):
 _buildifier_test = rule(
     implementation = _buildifier_test_impl,
     attrs = buildifier_attr_factory(test_rule = True),
+    exec_compatible_with = HOST_CONSTRAINTS,
     toolchains = ["@buildifier_prebuilt//buildifier:toolchain"],
     test = True,
 )
