@@ -141,6 +141,10 @@ def _create_assets(
                     platform = platform,
                     arch = arch,
                 )
+
+                if uniq_name not in sha256_values:
+                    fail("Missing sha256 value for {}".format(uniq_name))
+
                 assets.append(_create_asset(
                     name = name,
                     platform = platform,
