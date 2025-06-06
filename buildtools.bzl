@@ -33,6 +33,8 @@ def _create_asset(name, platform, arch, version, sha256 = None):
         fail("Expected an arch.")
     if version == None:
         fail("Expected a version.")
+    if sha256 == None:
+        fail("Expected a sha256.")
     if arch == "windows" and version == "arm64":
         fail("arm64 windows executables are not provided by buildifier/buildozer")
     if not sets.contains(_VALID_TOOL_NAMES, name):
