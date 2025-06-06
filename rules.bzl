@@ -2,7 +2,7 @@
 Rules to use the prebuilt buildifier / buildozer binaries
 """
 
-load("@local_config_platform//:constraints.bzl", "HOST_CONSTRAINTS")
+load("@platforms//host:constraints.bzl", "HOST_CONSTRAINTS")
 load("//buildifier:buildifier_binary.bzl", _buildifier_binary = "buildifier_binary")
 load(
     "//buildifier:factory.bzl",
