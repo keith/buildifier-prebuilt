@@ -1,2 +1,3 @@
 # Enable bzlmod
 common --enable_bzlmod
+build --test_output=errors

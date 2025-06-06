@@ -118,6 +118,8 @@ def _buildifier_prebuilt_deps_extension_impl(module_ctx):
                 register_toolchains = toolchains.register,
             )
 
+    return module_ctx.extension_metadata(reproducible = True)
+
 buildifier_prebuilt_deps_extension = module_extension(
     implementation = _buildifier_prebuilt_deps_extension_impl,
     tag_classes = {
