@@ -13,7 +13,7 @@ def _buildifier_toolchain_setup_impl(repository_ctx):
         content += """
 declare_toolchain(
     tool_name = "{tool_name}",
-    tool = "@{uniq_name}//file:{tool_name}{ext}",
+    tool = "@{uniq_name}//file",
     os = "{platform}",
     arch = "{arch}",
 )
