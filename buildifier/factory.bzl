@@ -151,7 +151,7 @@ def buildifier_impl_factory(ctx, *, test_rule):
 
     substitutions = {
         "@@ARGS@@": shell.array_literal(args) if out_ext == ".bash" else shell.array_literal(args)[1:][:-1].replace("'", ""),
-        "@@BUILDIFIER_SHORT_PATH@@": shell.quote(buildifier.short_path) if out_ext == ".bash" else buildifier.path,
+        "@@BUILDIFIER_SHORT_PATH@@": shell.quote(buildifier.short_path) if out_ext == ".bash" else buildifier.short_path,
         "@@EXCLUDE_PATTERNS@@": exclude_patterns_str,
         "@@WORKSPACE@@": workspace,
     }
