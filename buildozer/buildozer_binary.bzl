@@ -2,6 +2,8 @@
 Simple rule for running buildozer from the toolchain config
 """
 
+load("@platforms//host:constraints.bzl", "HOST_CONSTRAINTS")
+
 def _buildozer_binary(ctx):
     buildozer = ctx.toolchains["@buildifier_prebuilt//buildozer:toolchain"]._tool
     script = ctx.actions.declare_file("buildozer")
@@ -21,6 +23,7 @@ def _buildozer_binary(ctx):
 buildozer_binary = rule(
     implementation = _buildozer_binary,
     attrs = {},
+    exec_compatible_with = HOST_CONSTRAINTS,
     toolchains = ["@buildifier_prebuilt//buildozer:toolchain"],
     executable = True,
 )

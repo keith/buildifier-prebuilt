@@ -2,6 +2,8 @@
 Simple rule for running buildifier from the toolchain config
 """
 
+load("@platforms//host:constraints.bzl", "HOST_CONSTRAINTS")
+
 def _buildifier_binary(ctx):
     buildifier = ctx.toolchains["@buildifier_prebuilt//buildifier:toolchain"]._tool
     script = ctx.actions.declare_file("buildifier")
@@ -21,6 +23,7 @@ def _buildifier_binary(ctx):
 buildifier_binary = rule(
     implementation = _buildifier_binary,
     attrs = {},
+    exec_compatible_with = HOST_CONSTRAINTS,
     toolchains = ["@buildifier_prebuilt//buildifier:toolchain"],
     executable = True,
 )
