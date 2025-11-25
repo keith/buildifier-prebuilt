@@ -133,8 +133,8 @@ def buildifier_impl_factory(ctx, *, test_rule):
     if ctx.attr.exclude_patterns:
         if test_rule and not ctx.attr.no_sandbox:
             fail("Cannot use 'exclude_patterns' in a test rule without 'no_sandbox'")
-        exclude_patterns = ["\\! -path %s" % shell.quote(pattern) for pattern in ctx.attr.exclude_patterns]
-        exclude_patterns_str = " ".join(exclude_patterns)
+        exclude_patterns = ["-path %s" % shell.quote(pattern) for pattern in ctx.attr.exclude_patterns]
+        exclude_patterns_str = " -o ".join(exclude_patterns) + " -prune -o "
 
     workspace = ""
     if test_rule and ctx.attr.no_sandbox:
