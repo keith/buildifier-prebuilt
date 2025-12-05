@@ -106,19 +106,21 @@ def _create_assets_test(ctx):
         "buildifier_darwin_arm64": "e08381a3ed1d59c0a17d1cee1d4e7684c6ce1fc3b5cfa1bd92a5fe978b38b47d",
         "buildifier_linux_amd64": "3e79e6c0401b5f36f8df4dfc686127255d25c7eddc9599b8779b97b7ef4cdda7",
         "buildifier_linux_arm64": "c624a833bfa64d3a457ef0235eef0dbda03694768aab33f717a7ffd3f803d272",
+        "buildifier_linux_riscv64": "493dc831ab318b77ff7004982b6280b5c60c7a087e56fdd4b761081806217de3",
         "buildifier_windows_amd64": "a27fcf7521414f8214787989dcfb2ac7d3f7c28b56e44384e5fa06109953c2f1",
         "buildozer_darwin_amd64": "b7bd7189a9d4de22c10fd94b7d1d77c68712db9bdd27150187bc677e8c22960e",
         "buildozer_darwin_arm64": "781527c5337dadba5a0611c01409c669852b73b72458650cc7c5f31473f7ae3f",
         "buildozer_linux_amd64": "0e54770aa6148384d1edde39ef20e10d2c57e8c09dd42f525e100f51b0b77ae1",
         "buildozer_linux_arm64": "a9f38f2781de41526ce934866cb79b8b5b59871c96853dc5a1aee26f4c5976bb",
+        "buildozer_linux_riscv64": "a1f7e55c7e4a31407fe1e88dc3828938daed502089070e85826d47a6634a11e8",
         "buildozer_windows_amd64": "8ce5a9a064b01551ffb8d441fa9ef4dd42c9eeeed6bc71a89f917b3474fd65f6",
     }
 
     # Test use defaults
     assets = buildtools.create_assets(version = "8.2.0", sha256_values = shas)
 
-    # 2 tools * (2 mac arches + 2 linux arches + 1 windows arch)
-    asserts.equals(env, 10, len(assets))
+    # 2 tools * (2 mac arches + 3 linux arches + 1 windows arch)
+    asserts.equals(env, 12, len(assets))
     versions = sets.make([asset.version for asset in assets])
     asserts.true(env, sets.is_equal(versions, sets.make(["8.2.0"])))
     names = sets.make([asset.name for asset in assets])
@@ -126,13 +128,13 @@ def _create_assets_test(ctx):
     platforms = sets.make([asset.platform for asset in assets])
     asserts.true(env, sets.is_equal(platforms, sets.make(["darwin", "linux", "windows"])))
     arches = sets.make([asset.arch for asset in assets])
-    asserts.true(env, sets.is_equal(arches, sets.make(["amd64", "arm64"])))
+    asserts.true(env, sets.is_equal(arches, sets.make(["amd64", "arm64", "riscv64"])))
 
     # Test with custom names
     assets = buildtools.create_assets(version = "8.2.0", names = ["buildifier"], sha256_values = shas)
 
-    # 2 mac arches + 2 linux arches + 1 windows arch
-    asserts.equals(env, 5, len(assets))
+    # 2 mac arches + 3 linux arches + 1 windows arch
+    asserts.equals(env, 6, len(assets))
     versions = sets.make([asset.version for asset in assets])
     asserts.true(env, sets.is_equal(versions, sets.make(["8.2.0"])))
     names = sets.make([asset.name for asset in assets])
@@ -140,11 +142,11 @@ def _create_assets_test(ctx):
     platforms = sets.make([asset.platform for asset in assets])
     asserts.true(env, sets.is_equal(platforms, sets.make(["darwin", "linux", "windows"])))
     arches = sets.make([asset.arch for asset in assets])
-    asserts.true(env, sets.is_equal(arches, sets.make(["amd64", "arm64"])))
+    asserts.true(env, sets.is_equal(arches, sets.make(["amd64", "arm64", "riscv64"])))
 
     # Test with custom platforms
     assets = buildtools.create_assets(version = "8.2.0", platforms = ["linux"], sha256_values = shas)
-    asserts.equals(env, 4, len(assets))
+    asserts.equals(env, 6, len(assets))
     versions = sets.make([asset.version for asset in assets])
     asserts.true(env, sets.is_equal(versions, sets.make(["8.2.0"])))
     names = sets.make([asset.name for asset in assets])
@@ -152,7 +154,7 @@ def _create_assets_test(ctx):
     platforms = sets.make([asset.platform for asset in assets])
     asserts.true(env, sets.is_equal(platforms, sets.make(["linux"])))
     arches = sets.make([asset.arch for asset in assets])
-    asserts.true(env, sets.is_equal(arches, sets.make(["amd64", "arm64"])))
+    asserts.true(env, sets.is_equal(arches, sets.make(["amd64", "arm64", "riscv64"])))
 
     # Test with custom arches
     assets = buildtools.create_assets(version = "8.2.0", arches = ["amd64"], sha256_values = shas)
