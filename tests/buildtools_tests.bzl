@@ -194,10 +194,38 @@ def _create_assets_test(ctx):
 
 create_assets_test = unittest.make(_create_assets_test)
 
+def _create_assets_require_all_false_test(ctx):
+    env = unittest.begin(ctx)
+
+    shas = {
+        "buildifier_darwin_amd64": "375f823103d01620aaec20a0c29c6cbca99f4fd0725ae30b93655c6704f44d71",
+        "buildifier_darwin_arm64": "5a6afc6ac7a09f5455ba0b89bd99d5ae23b4174dc5dc9d6c0ed5ce8caac3f813",
+        "buildifier_linux_amd64": "5474cc5128a74e806783d54081f581662c4be8ae65022f557e9281ed5dc88009",
+        "buildifier_linux_arm64": "0bf86c4bfffaf4f08eed77bde5b2082e4ae5039a11e2e8b03984c173c34a561c",
+        "buildifier_linux_s390x": "e2d79ff5885d45274f76531f1adbc7b73a129f59e767f777e8fbde633d9d4e2e",
+        "buildifier_windows_amd64": "370cd576075ad29930a82f5de132f1a1de4084c784a82514bd4da80c85acf4a8",
+    }
+
+    # Missing combinations are skipped
+    assets = buildtools.create_assets(
+        version = "v7.3.1",
+        arches = ["amd64", "arm64", "s390x"],
+        names = ["buildifier"],
+        platforms = ["darwin", "linux", "windows"],
+        sha256_values = shas,
+    )
+
+    asserts.equals(env, 6, len(assets))
+
+    return unittest.end(env)
+
+create_assets_require_all_false_test = unittest.make(_create_assets_require_all_false_test)
+
 def buildtools_test_suite():
     return unittest.suite(
         "buildtools_tests",
         create_asset_test,
+        create_assets_require_all_false_test,
         create_unique_name_test,
         default_assets_test,
         asset_json_roundtrip_test,
