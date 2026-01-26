@@ -13,7 +13,7 @@ assets=()
 
 for binary in buildifier buildozer; do
   for os in darwin linux windows; do
-    for arch in amd64 arm64 riscv64; do
+    for arch in amd64 arm64 riscv64 s390x; do
       filename=$binary-$os-$arch
       if [[ "$os" == "windows" ]]; then
         if [[ "$arch" == "arm64" || "$arch" == "riscv64" ]]; then
@@ -22,15 +22,17 @@ for binary in buildifier buildozer; do
 
         filename="$filename.exe"
       fi
-      
-      if [[ "$os" == "darwin" ]]; then
-        if [[ "$arch" == "riscv64" ]]; then
-          continue
-        fi
+
+      if [[ "$os" == "darwin" && "$arch" == "riscv64" ]]; then
+        continue
       fi
 
-      # Skip versions prior to 8.2.0 for riscv64
-      if [[ "$arch" == "riscv64" && $(printf '%s\n' "$version" "8.2.0" | sort -V | head -n1) == "$version" ]] && [[ "$version" != "8.2.0" ]]; then
+      if [[ "$os" != "linux" && "$arch" == "s390x" ]]; then
+        continue
+      fi
+
+      # Skip versions prior to 8.2.0 for riscv64 and s390x
+      if [[ ("$arch" == "riscv64" || "$arch" == "s390x") && $(printf '%s\n' "$version" "8.2.0" | sort -V | head -n1) == "$version" ]] && [[ "$version" != "8.2.0" ]]; then
         continue
       fi
 
@@ -55,7 +57,7 @@ buildifier_prebuilt_register_toolchains(
         version = "$version",
         names = ["buildifier", "buildozer"],
         platforms = ["darwin", "linux", "windows"],
-        arches = ["amd64", "arm64", "riscv64"],
+        arches = ["amd64", "arm64", "riscv64", "s390x"],
         sha256_values = {
 $(printf '%s\n' "${assets[@]}")
         },
