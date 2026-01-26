@@ -37,8 +37,8 @@ _buildifier_test = rule(
 )
 
 def buildifier_test(**kwargs):
-    """
-    Wrapper for the _buildifier_test rule. Optionally disables sandboxing and caching.
+    """Wrapper for the _buildifier_test rule. Optionally disables sandboxing and caching.
+
     Args:
       **kwargs: all parameters for _buildifier_test
     """

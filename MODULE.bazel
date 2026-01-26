@@ -16,15 +16,15 @@ use_repo(
 
 register_toolchains("@buildifier_prebuilt_toolchains//:all")
 
-bazel_dep(name = "rules_shell", version = "0.4.0", dev_dependency = True)
+bazel_dep(name = "rules_shell", version = "0.6.1", dev_dependency = True)
 bazel_dep(
     name = "cgrindel_bazel_starlib",
-    version = "0.16.0",
+    version = "0.28.0",
     dev_dependency = True,
 )
 bazel_dep(
     name = "rules_bazel_integration_test",
-    version = "0.12.0",
+    version = "0.36.0",
     dev_dependency = True,
 )
 
@@ -34,5 +34,6 @@ bazel_binaries = use_extension(
     dev_dependency = True,
 )
 bazel_binaries.download(version_file = "//:.bazelversion")
+bazel_binaries.download(version = "8.5.1")
 bazel_binaries.download(version = "7.6.1")
-use_repo(bazel_binaries, "bazel_binaries")
+use_repo(bazel_binaries, "bazel_binaries", "bazel_binaries_bazelisk", "build_bazel_bazel_.bazelversion", "build_bazel_bazel_7_6_1", "build_bazel_bazel_8_5_1")

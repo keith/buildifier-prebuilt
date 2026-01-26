@@ -45,8 +45,14 @@ _EXAMPLE_RUNNERS = {
 }
 
 _EXAMPLE_BAZEL_VERSIONS = {
-    "bzlmod": [bazel_binaries.versions.current],
-    "bzlmod_specify_assets": [bazel_binaries.versions.current],
+    "simple": [
+        "7.6.1",
+        "8.5.1",
+    ],
+    "specify_assets": [
+        "7.6.1",
+        "8.5.1",
+    ],
 }
 
 [
