@@ -7,7 +7,7 @@ load("@bazel_skylib//lib:types.bzl", "types")
 
 _TOOL_NAMES = ["buildifier", "buildozer"]
 _TYPICAL_PLATFORMS = ["windows", "darwin", "linux"]
-_TYPICAL_ARCHES = ["amd64", "arm64", "riscv64"]
+_TYPICAL_ARCHES = ["amd64", "arm64", "riscv64", "s390x"]
 _VALID_TOOL_NAMES = sets.make(_TOOL_NAMES)
 
 def _create_asset(name, platform, arch, version, sha256 = None):
@@ -137,13 +137,6 @@ def _create_assets(
     for name in names:
         for platform in platforms:
             for arch in arches:
-                if platform == "windows" and arch == "arm64":
-                    continue
-                if platform == "windows" and arch == "riscv64":
-                    continue
-                if platform == "darwin" and arch == "riscv64":
-                    continue
-
                 uniq_name = _create_unique_name(
                     name = name,
                     platform = platform,
@@ -151,7 +144,7 @@ def _create_assets(
                 )
 
                 if uniq_name not in sha256_values:
-                    fail("Missing sha256 value for {}".format(uniq_name))
+                    continue
 
                 assets.append(_create_asset(
                     name = name,
@@ -164,9 +157,9 @@ def _create_assets(
 
 _DEFAULT_ASSETS = _create_assets(
     version = "v8.2.1",
-    names = ["buildifier", "buildozer"],
-    platforms = ["darwin", "linux", "windows"],
-    arches = ["amd64", "arm64", "riscv64"],
+    names = _TOOL_NAMES,
+    platforms = _TYPICAL_PLATFORMS,
+    arches = _TYPICAL_ARCHES,
     sha256_values = {
         "buildifier_darwin_amd64": "9f8cffceb82f4e6722a32a021cbc9a5344b386b77b9f79ee095c61d087aaea06",
         "buildifier_darwin_arm64": "cfab310ae22379e69a3b1810b433c4cd2fc2c8f4a324586dfe4cc199943b8d5a",
