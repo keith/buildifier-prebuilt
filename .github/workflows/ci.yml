@@ -23,7 +23,14 @@ jobs:
       shell: bash
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: bazelisk test //... //:all_integration_tests
+      run: bazelisk test //...
+    - name: Execute Integration Tests
+      shell: bash
+      # Bazel-in-Bazel still has issues with runfiles
+      if: runner.os != 'Windows'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: bazelisk test //:all_integration_tests
 
   example_simple:
     strategy:
@@ -99,8 +106,5 @@ jobs:
       - example_bzlmod_specify_assets
     runs-on: ubuntu-latest
     steps:
-    - run: |
-        if [[ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" == "true" ]]; then
-          echo "One or more jobs failed or were cancelled"
-          exit 1
-        fi
+    - run: exit 1
+      if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
