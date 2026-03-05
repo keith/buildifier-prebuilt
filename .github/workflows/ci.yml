@@ -13,7 +13,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-        bazel_version: ['7.x', '8.x', '9.x', rolling]
+        bazel_version: ['9.x', rolling]
     runs-on: ${{ matrix.os }}
     env:
       USE_BAZEL_VERSION: ${{ matrix.bazel_version }}
@@ -23,14 +23,7 @@ jobs:
       shell: bash
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: bazelisk test //...
-    - name: Execute Integration Tests
-      shell: bash
-      # Bazel-in-Bazel still has issues with runfiles
-      if: runner.os != 'Windows'
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: bazelisk test //:all_integration_tests
+      run: bazelisk test //... //:all_integration_tests
 
   example_simple:
     strategy:
@@ -85,7 +78,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-        bazel_version: ['7.x', '8.x', '9.x', rolling]
+        bazel_version: ['9.x', rolling]
     runs-on: ${{ matrix.os }}
     env:
       USE_BAZEL_VERSION: ${{ matrix.bazel_version }}
@@ -106,5 +99,8 @@ jobs:
       - example_bzlmod_specify_assets
     runs-on: ubuntu-latest
     steps:
-    - run: exit 1
-      if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+    - run: |
+        if [[ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" == "true" ]]; then
+          echo "One or more jobs failed or were cancelled"
+          exit 1
+        fi
