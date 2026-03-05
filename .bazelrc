@@ -1,5 +1,7 @@
 common --enable_platform_specific_config
 
+common --check_direct_dependencies=off
+
 common:linux --repo_env=CC=clang
 common:windows --enable_runfiles
 
