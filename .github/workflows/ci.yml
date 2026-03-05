@@ -14,7 +14,7 @@ jobs:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
         bazel:
-          - { version: '7.x', flags: '' }
+          - { version: '7.x', flags: '--noenable_bzlmod' }
           - { version: '7.x', flags: '--enable_bzlmod' }
           - { version: '8.x', flags: '--noenable_bzlmod --enable_workspace' }
           - { version: '8.x', flags: '--enable_bzlmod --noenable_workspace' }
@@ -32,11 +32,99 @@ jobs:
       shell: bash
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: bazelisk test ... --test_output=errors ${{ matrix.bazel.flags }}
+      run: bazelisk test //... --test_output=errors ${{ matrix.bazel.flags }}
     - name: Execute Integration Tests
       shell: bash
       # Bazel-in-Bazel still has issues with runfiles
       if: runner.os != 'Windows'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: bazelisk test :all_integration_tests --test_output=errors ${{ matrix.bazel.flags }}
+      run: bazelisk test //:all_integration_tests --test_output=errors ${{ matrix.bazel.flags }}
+
+  example_simple:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        bazel:
+          - { version: '7.x', flags: '--noenable_bzlmod --enable_workspace' }
+          - { version: '8.x', flags: '--noenable_bzlmod --enable_workspace' }
+    runs-on: ${{ matrix.os }}
+    env:
+      USE_BAZEL_VERSION: ${{ matrix.bazel.version }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set CC
+      if: runner.os == 'Linux'
+      run: echo "CC=clang" >> "$GITHUB_ENV"
+    - name: Test
+      shell: bash
+      working-directory: examples/simple
+      run: bazelisk test //... --test_output=errors ${{ matrix.bazel.flags }}
+
+  example_specify_assets:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        bazel:
+          - { version: '7.x', flags: '--noenable_bzlmod --enable_workspace' }
+          - { version: '8.x', flags: '--noenable_bzlmod --enable_workspace' }
+    runs-on: ${{ matrix.os }}
+    env:
+      USE_BAZEL_VERSION: ${{ matrix.bazel.version }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set CC
+      if: runner.os == 'Linux'
+      run: echo "CC=clang" >> "$GITHUB_ENV"
+    - name: Test
+      shell: bash
+      working-directory: examples/specify_assets
+      run: bazelisk test //... --test_output=errors ${{ matrix.bazel.flags }}
+
+  example_bzlmod:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        bazel:
+          - { version: '7.x', flags: '--enable_bzlmod --noenable_workspace' }
+          - { version: '8.x', flags: '--enable_bzlmod --noenable_workspace' }
+          - { version: '9.x', flags: '' }
+          - { version: rolling, flags: '' }
+    runs-on: ${{ matrix.os }}
+    env:
+      USE_BAZEL_VERSION: ${{ matrix.bazel.version }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set CC
+      if: runner.os == 'Linux'
+      run: echo "CC=clang" >> "$GITHUB_ENV"
+    - name: Test
+      shell: bash
+      working-directory: examples/bzlmod
+      run: bazelisk test //... --test_output=errors ${{ matrix.bazel.flags }}
+
+  example_bzlmod_specify_assets:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        bazel:
+          - { version: '7.x', flags: '--enable_bzlmod --noenable_workspace' }
+          - { version: '8.x', flags: '--enable_bzlmod --noenable_workspace' }
+          - { version: '9.x', flags: '' }
+          - { version: rolling, flags: '' }
+    runs-on: ${{ matrix.os }}
+    env:
+      USE_BAZEL_VERSION: ${{ matrix.bazel.version }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set CC
+      if: runner.os == 'Linux'
+      run: echo "CC=clang" >> "$GITHUB_ENV"
+    - name: Test
+      shell: bash
+      working-directory: examples/bzlmod_specify_assets
+      run: bazelisk test //... --test_output=errors ${{ matrix.bazel.flags }}
