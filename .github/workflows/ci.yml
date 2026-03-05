@@ -95,3 +95,16 @@ jobs:
       shell: bash
       working-directory: examples/bzlmod_specify_assets
       run: bazelisk test //...
+
+  result:
+    if: always()
+    needs:
+      - build
+      - example_simple
+      - example_specify_assets
+      - example_bzlmod
+      - example_bzlmod_specify_assets
+    runs-on: ubuntu-latest
+    steps:
+    - run: exit 1
+      if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
