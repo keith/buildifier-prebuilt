@@ -1,3 +1,8 @@
+common --enable_platform_specific_config
+
+common:linux --repo_env=CC=clang
+common:windows --enable_runfiles
+
 # Avoid https://github.com/bazelbuild/bazel/issues/14459 since we don't need Xcode
 common --repo_env=BAZEL_USE_CPP_ONLY_TOOLCHAIN=1
 

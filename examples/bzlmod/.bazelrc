@@ -1,2 +1,3 @@
-# Enable bzlmod
+import %workspace%/../../.bazelrc
+
 common --enable_bzlmod

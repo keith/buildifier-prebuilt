@@ -13,118 +13,85 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-        bazel:
-          - { version: '7.x', flags: '--noenable_bzlmod' }
-          - { version: '7.x', flags: '--enable_bzlmod' }
-          - { version: '8.x', flags: '--noenable_bzlmod --enable_workspace' }
-          - { version: '8.x', flags: '--enable_bzlmod --noenable_workspace' }
-          - { version: '9.x', flags: '' }
-          - { version: rolling, flags: '' }
+        bazel_version: ['7.x', '8.x', '9.x', rolling]
     runs-on: ${{ matrix.os }}
     env:
-      USE_BAZEL_VERSION: ${{ matrix.bazel.version }}
+      USE_BAZEL_VERSION: ${{ matrix.bazel_version }}
     steps:
     - uses: actions/checkout@v2
-    - name: Set CC
-      if: runner.os == 'Linux'
-      run: echo "CC=clang" >> "$GITHUB_ENV"
     - name: Execute Tests
       shell: bash
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: bazelisk test //... --test_output=errors ${{ matrix.bazel.flags }}
+      run: bazelisk test //...
     - name: Execute Integration Tests
       shell: bash
       # Bazel-in-Bazel still has issues with runfiles
       if: runner.os != 'Windows'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: bazelisk test //:all_integration_tests --test_output=errors ${{ matrix.bazel.flags }}
+      run: bazelisk test //:all_integration_tests
 
   example_simple:
     strategy:
       fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-        bazel:
-          - { version: '7.x', flags: '--noenable_bzlmod --enable_workspace' }
-          - { version: '8.x', flags: '--noenable_bzlmod --enable_workspace' }
+        bazel_version: ['7.x', '8.x']
     runs-on: ${{ matrix.os }}
     env:
-      USE_BAZEL_VERSION: ${{ matrix.bazel.version }}
+      USE_BAZEL_VERSION: ${{ matrix.bazel_version }}
     steps:
     - uses: actions/checkout@v2
-    - name: Set CC
-      if: runner.os == 'Linux'
-      run: echo "CC=clang" >> "$GITHUB_ENV"
     - name: Test
       shell: bash
       working-directory: examples/simple
-      run: bazelisk test //... --test_output=errors ${{ matrix.bazel.flags }}
+      run: bazelisk test //...
 
   example_specify_assets:
     strategy:
       fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-        bazel:
-          - { version: '7.x', flags: '--noenable_bzlmod --enable_workspace' }
-          - { version: '8.x', flags: '--noenable_bzlmod --enable_workspace' }
+        bazel_version: ['7.x', '8.x']
     runs-on: ${{ matrix.os }}
     env:
-      USE_BAZEL_VERSION: ${{ matrix.bazel.version }}
+      USE_BAZEL_VERSION: ${{ matrix.bazel_version }}
     steps:
     - uses: actions/checkout@v2
-    - name: Set CC
-      if: runner.os == 'Linux'
-      run: echo "CC=clang" >> "$GITHUB_ENV"
     - name: Test
       shell: bash
       working-directory: examples/specify_assets
-      run: bazelisk test //... --test_output=errors ${{ matrix.bazel.flags }}
+      run: bazelisk test //...
 
   example_bzlmod:
     strategy:
       fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-        bazel:
-          - { version: '7.x', flags: '--enable_bzlmod --noenable_workspace' }
-          - { version: '8.x', flags: '--enable_bzlmod --noenable_workspace' }
-          - { version: '9.x', flags: '' }
-          - { version: rolling, flags: '' }
+        bazel_version: ['7.x', '8.x', '9.x', rolling]
     runs-on: ${{ matrix.os }}
     env:
-      USE_BAZEL_VERSION: ${{ matrix.bazel.version }}
+      USE_BAZEL_VERSION: ${{ matrix.bazel_version }}
     steps:
     - uses: actions/checkout@v2
-    - name: Set CC
-      if: runner.os == 'Linux'
-      run: echo "CC=clang" >> "$GITHUB_ENV"
     - name: Test
       shell: bash
       working-directory: examples/bzlmod
-      run: bazelisk test //... --test_output=errors ${{ matrix.bazel.flags }}
+      run: bazelisk test //...
 
   example_bzlmod_specify_assets:
     strategy:
       fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-        bazel:
-          - { version: '7.x', flags: '--enable_bzlmod --noenable_workspace' }
-          - { version: '8.x', flags: '--enable_bzlmod --noenable_workspace' }
-          - { version: '9.x', flags: '' }
-          - { version: rolling, flags: '' }
+        bazel_version: ['7.x', '8.x', '9.x', rolling]
     runs-on: ${{ matrix.os }}
     env:
-      USE_BAZEL_VERSION: ${{ matrix.bazel.version }}
+      USE_BAZEL_VERSION: ${{ matrix.bazel_version }}
     steps:
     - uses: actions/checkout@v2
-    - name: Set CC
-      if: runner.os == 'Linux'
-      run: echo "CC=clang" >> "$GITHUB_ENV"
     - name: Test
       shell: bash
       working-directory: examples/bzlmod_specify_assets
-      run: bazelisk test //... --test_output=errors ${{ matrix.bazel.flags }}
+      run: bazelisk test //...
