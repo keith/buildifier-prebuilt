@@ -1,4 +1,4 @@
-name: CI for PR Merge
+name: CI
 
 on:
   pull_request:
@@ -8,28 +8,103 @@ on:
     - cron: '3 11 * * *'
 
 jobs:
-  macos_build:
-    runs-on: macos-latest
-    steps:
-    - uses: actions/checkout@v2
-    - uses: ./.github/actions/build_and_test
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-
-  ubuntu_build:
-    runs-on: ubuntu-latest
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        bazel_version: ['9.x', rolling]
+    runs-on: ${{ matrix.os }}
     env:
-      CC: clang
+      USE_BAZEL_VERSION: ${{ matrix.bazel_version }}
     steps:
     - uses: actions/checkout@v2
-    - uses: ./.github/actions/build_and_test
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Execute Tests
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: bazelisk test //...
+    - name: Execute Integration Tests
+      shell: bash
+      # Bazel-in-Bazel still has issues with runfiles
+      if: runner.os != 'Windows'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: bazelisk test //:all_integration_tests
 
-  windows_build:
-    runs-on: windows-latest
+  example_simple:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        bazel_version: ['7.x', '8.x']
+    runs-on: ${{ matrix.os }}
+    env:
+      USE_BAZEL_VERSION: ${{ matrix.bazel_version }}
     steps:
     - uses: actions/checkout@v2
-    - uses: ./.github/actions/build_and_test
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Test
+      shell: bash
+      working-directory: examples/simple
+      run: bazelisk test //...
+
+  example_specify_assets:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        bazel_version: ['7.x', '8.x']
+    runs-on: ${{ matrix.os }}
+    env:
+      USE_BAZEL_VERSION: ${{ matrix.bazel_version }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Test
+      shell: bash
+      working-directory: examples/specify_assets
+      run: bazelisk test //...
+
+  example_bzlmod:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        bazel_version: ['7.x', '8.x', '9.x', rolling]
+    runs-on: ${{ matrix.os }}
+    env:
+      USE_BAZEL_VERSION: ${{ matrix.bazel_version }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Test
+      shell: bash
+      working-directory: examples/bzlmod
+      run: bazelisk test //...
+
+  example_bzlmod_specify_assets:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        bazel_version: ['9.x', rolling]
+    runs-on: ${{ matrix.os }}
+    env:
+      USE_BAZEL_VERSION: ${{ matrix.bazel_version }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Test
+      shell: bash
+      working-directory: examples/bzlmod_specify_assets
+      run: bazelisk test //...
+
+  result:
+    if: always()
+    needs:
+      - build
+      - example_simple
+      - example_specify_assets
+      - example_bzlmod
+      - example_bzlmod_specify_assets
+    runs-on: ubuntu-latest
+    steps:
+    - run: exit 1
+      if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
