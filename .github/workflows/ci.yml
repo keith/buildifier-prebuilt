@@ -8,28 +8,34 @@ on:
     - cron: '3 11 * * *'
 
 jobs:
-  macos_build:
-    runs-on: macos-latest
-    steps:
-    - uses: actions/checkout@v2
-    - uses: ./.github/actions/build_and_test
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-
-  ubuntu_build:
-    runs-on: ubuntu-latest
+  build:
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        bazel:
+          - { version: '7.x', flags: '' }
+          - { version: '7.x', flags: '--enable_bzlmod' }
+          - { version: '8.x', flags: '--noenable_bzlmod --enable_workspace' }
+          - { version: '8.x', flags: '--enable_bzlmod --noenable_workspace' }
+          - { version: '9.x', flags: '' }
+          - { version: rolling, flags: '' }
+    runs-on: ${{ matrix.os }}
     env:
-      CC: clang
+      USE_BAZEL_VERSION: ${{ matrix.bazel.version }}
     steps:
     - uses: actions/checkout@v2
-    - uses: ./.github/actions/build_and_test
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-
-  windows_build:
-    runs-on: windows-latest
-    steps:
-    - uses: actions/checkout@v2
-    - uses: ./.github/actions/build_and_test
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Set CC
+      if: runner.os == 'Linux'
+      run: echo "CC=clang" >> "$GITHUB_ENV"
+    - name: Execute Tests
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: bazelisk test ... --test_output=errors ${{ matrix.bazel.flags }}
+    - name: Execute Integration Tests
+      shell: bash
+      # Bazel-in-Bazel still has issues with runfiles
+      if: runner.os != 'Windows'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: bazelisk test :all_integration_tests --test_output=errors ${{ matrix.bazel.flags }}
