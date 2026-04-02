@@ -1,5 +1,4 @@
 load("@bazel_binaries//:defs.bzl", "bazel_binaries")
-load("@cgrindel_bazel_starlib//bzllib:defs.bzl", "lists")
 load(
     "@rules_bazel_integration_test//bazel_integration_test:defs.bzl",
     "bazel_integration_tests",
@@ -76,15 +75,16 @@ test_suite(
     # If you don't apply the test tags to the test suite, the test suite will
     # be found when `bazel test //...` is executed.
     tags = integration_test_utils.DEFAULT_INTEGRATION_TEST_TAGS,
-    tests = lists.flatten([
-        integration_test_utils.bazel_integration_test_names(
+    tests = [
+        test
+        for example in _ALL_EXAMPLES
+        for test in integration_test_utils.bazel_integration_test_names(
             "{}_test".format(example),
             _EXAMPLE_BAZEL_VERSIONS.get(
                 example,
                 bazel_binaries.versions.all,
             ),
         )
-        for example in _ALL_EXAMPLES
-    ]),
+    ],
     visibility = ["//:__subpackages__"],
 )
