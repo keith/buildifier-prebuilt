@@ -31,6 +31,11 @@ for binary in buildifier buildozer; do
         continue
       fi
 
+      # Skip versions prior to 8.5.1 for windows arm64
+      if [[ "$os" == "windows" && "$arch" == "arm64" && $(printf '%s\n' "$version" "8.5.1" | sort -V | head -n1) == "$version" ]] && [[ "$version" != "8.5.1" ]]; then
+        continue
+      fi
+
       # Skip versions prior to 8.2.0 for riscv64 and s390x
       if [[ ("$arch" == "riscv64" || "$arch" == "s390x") && $(printf '%s\n' "$version" "8.2.0" | sort -V | head -n1) == "$version" ]] && [[ "$version" != "8.2.0" ]]; then
         continue
