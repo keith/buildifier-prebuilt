@@ -11,10 +11,10 @@ source "${RUNFILES_DIR:-/dev/null}/$f" 2>/dev/null || \
   { echo>&2 "ERROR: cannot find $f"; exit 1; }; f=; set -e
 # --- end runfiles.bash initialization v2 ---
 
-assertions_sh_location=cgrindel_bazel_starlib/shlib/lib/assertions.sh
-assertions_sh="$(rlocation "${assertions_sh_location}")" || \
-  (echo >&2 "Failed to locate ${assertions_sh_location}" && exit 1)
-source "${assertions_sh}"
+fail() {
+  echo >&2 "$@"
+  exit 1
+}
 
 create_scratch_dir_sh_location=rules_bazel_integration_test/tools/create_scratch_dir.sh
 create_scratch_dir_sh="$(rlocation "${create_scratch_dir_sh_location}")" || \

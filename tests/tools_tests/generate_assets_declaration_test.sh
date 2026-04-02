@@ -14,11 +14,6 @@ source "${RUNFILES_DIR:-/dev/null}/$f" 2>/dev/null || \
 
 # MARK - Locate Deps
 
-assertions_sh_location=cgrindel_bazel_starlib/shlib/lib/assertions.sh
-assertions_sh="$(rlocation "${assertions_sh_location}")" || \
-  (echo >&2 "Failed to locate ${assertions_sh_location}" && exit 1)
-source "${assertions_sh}"
-
 generate_assets_declaration_sh_location=buildifier_prebuilt/tools/generate_assets_declaration.sh
 generate_assets_declaration_sh="$(rlocation "${generate_assets_declaration_sh_location}")" || \
   (echo >&2 "Failed to locate ${generate_assets_declaration_sh_location}" && exit 1)
@@ -37,6 +32,17 @@ export "BUILD_WORKSPACE_DIRECTORY=${repo_dir}"
 # MARK - Test with Release Tag
 
 actual="$( "${generate_assets_declaration_sh}" "4.2.3" )"
+
+assert_match() {
+  local pattern="$1"
+  local actual="$2"
+  if ! echo "${actual}" | grep -qE "${pattern}"; then
+    echo >&2 "Expected to match '${pattern}' in output:"
+    echo >&2 "${actual}"
+    exit 1
+  fi
+}
+
 assert_match "version.*4.2.3" "${actual}"
 assert_match \
   "buildifier_darwin_amd64.*954ec397089344b1564e45dc095e9331e121eb0f20e72032fcc8e94de78e5663" \
