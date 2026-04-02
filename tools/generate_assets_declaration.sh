@@ -16,7 +16,7 @@ for binary in buildifier buildozer; do
     for arch in amd64 arm64 riscv64 s390x; do
       filename=$binary-$os-$arch
       if [[ "$os" == "windows" ]]; then
-        if [[ "$arch" == "arm64" || "$arch" == "riscv64" ]]; then
+        if [[ "$arch" == "riscv64" ]]; then
           continue
         fi
 
