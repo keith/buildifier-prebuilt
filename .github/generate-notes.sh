@@ -23,7 +23,7 @@ http_archive(
     sha256 = "$sha256",
     strip_prefix = "buildifier-prebuilt-$new_version",
     urls = [
-        "http://github.com/keith/buildifier-prebuilt/archive/$new_version.tar.gz",
+        "https://github.com/keith/buildifier-prebuilt/releases/download/$new_version/buildifier-prebuilt.$new_version.tar.gz",
     ],
 )
 
