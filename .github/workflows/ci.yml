@@ -36,7 +36,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest, windows-11-arm]
+        os: [macos-latest, ubuntu-latest, windows-latest]
         bazel_version: ['7.x', '8.x']
     runs-on: ${{ matrix.os }}
     env:
@@ -52,7 +52,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest, windows-11-arm]
+        os: [macos-latest, ubuntu-latest, windows-latest]
         bazel_version: ['7.x', '8.x']
     runs-on: ${{ matrix.os }}
     env:
@@ -68,7 +68,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest, windows-11-arm]
+        os: [macos-latest, ubuntu-latest, windows-latest]
         bazel_version: ['7.x', '8.x', '9.x', rolling]
     runs-on: ${{ matrix.os }}
     env:
@@ -84,7 +84,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest, windows-11-arm]
+        os: [macos-latest, ubuntu-latest, windows-latest]
         bazel_version: ['9.x', rolling]
     runs-on: ${{ matrix.os }}
     env:
