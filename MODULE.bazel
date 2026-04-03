@@ -1,6 +1,6 @@
 module(
     name = "buildifier_prebuilt",
-    version = "6.0.0.1",
+    version = "0",
     compatibility_level = 1,
 )
 
@@ -17,11 +17,6 @@ use_repo(
 
 register_toolchains("@buildifier_prebuilt_toolchains//:all")
 
-bazel_dep(
-    name = "cgrindel_bazel_starlib",
-    version = "0.28.0",
-    dev_dependency = True,
-)
 bazel_dep(
     name = "rules_bazel_integration_test",
     version = "0.36.0",
