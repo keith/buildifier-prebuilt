@@ -35,8 +35,6 @@ def _create_asset(name, platform, arch, version, sha256 = None):
         fail("Expected a version.")
     if sha256 == None:
         fail("Expected a sha256.")
-    if arch == "windows" and version == "arm64":
-        fail("arm64 windows executables are not provided by buildifier/buildozer")
     if arch == "windows" and version == "riscv64":
         fail("riscv64 windows executables are not provided by buildifier/buildozer")
     if arch == "darwin" and version == "riscv64":
@@ -168,6 +166,7 @@ _DEFAULT_ASSETS = _create_assets(
         "buildifier_linux_riscv64": "90edba97d237672d33ebabf72a2d34ffbedbed25409631846ec161b1583488d2",
         "buildifier_linux_s390x": "f90975cf1afd7b3472ab559c1ce2b3785b099e53e66868d7baf0f6b6582a7c98",
         "buildifier_windows_amd64": "f4ecb9c73de2bc38b845d4ee27668f6248c4813a6647db4b4931a7556052e4e1",
+        "buildifier_windows_arm64": "55a276ad8b1ff46be48bf64e432264034ea69a45aa3914e89c1d1936f5c2d85c",
         "buildozer_darwin_amd64": "b85b9ad59c1543999a5d8bc8bee6e42b9f025be3ff520bc2d090213698850b43",
         "buildozer_darwin_arm64": "d0cf2f6e11031d62bfd4584e46eb6bb708a883ff948be76538b34b83de833262",
         "buildozer_linux_amd64": "2b745ca2ad41f1e01673fb59ac50af6b45ca26105c1d20fad64c3d05a95522f5",
@@ -175,6 +174,7 @@ _DEFAULT_ASSETS = _create_assets(
         "buildozer_linux_riscv64": "9b0c81b873bb77ade5e439afbb78217dc72e027af6bbab2b7c39812fed545791",
         "buildozer_linux_s390x": "0b736803697d74084d81dec4c9b1297be6dd9b6f58fe49951236bfc1852b2499",
         "buildozer_windows_amd64": "e177155c2c8ef41569791de34f13077cefe3e5623f9f02e099347232bc028901",
+        "buildozer_windows_arm64": "f6528a676f4bc22a1f92358d3150d9d1ab4fcb19054f55b7e04775d8cdc3e94b",
     },
 )
 

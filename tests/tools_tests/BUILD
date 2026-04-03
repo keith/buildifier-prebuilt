@@ -20,6 +20,5 @@ sh_test(
     }),
     deps = [
         "@bazel_tools//tools/bash/runfiles",
-        "@cgrindel_bazel_starlib//shlib/lib:assertions",
     ],
 )

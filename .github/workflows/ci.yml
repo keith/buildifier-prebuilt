@@ -12,8 +12,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [macos-latest, ubuntu-latest, windows-latest, windows-11-arm]
         bazel_version: ['9.x', rolling]
+        exclude:
+          - os: windows-11-arm
+            bazel_version: '9.x' # TODO: Remove once >9.0.1 is out
     runs-on: ${{ matrix.os }}
     env:
       USE_BAZEL_VERSION: ${{ matrix.bazel_version }}

@@ -16,7 +16,7 @@ for binary in buildifier buildozer; do
     for arch in amd64 arm64 riscv64 s390x; do
       filename=$binary-$os-$arch
       if [[ "$os" == "windows" ]]; then
-        if [[ "$arch" == "arm64" || "$arch" == "riscv64" ]]; then
+        if [[ "$arch" == "riscv64" ]]; then
           continue
         fi
 
@@ -28,6 +28,11 @@ for binary in buildifier buildozer; do
       fi
 
       if [[ "$os" != "linux" && "$arch" == "s390x" ]]; then
+        continue
+      fi
+
+      # Skip versions prior to 8.5.1 for windows arm64
+      if [[ "$os" == "windows" && "$arch" == "arm64" && $(printf '%s\n' "$version" "8.5.1" | sort -V | head -n1) == "$version" ]] && [[ "$version" != "8.5.1" ]]; then
         continue
       fi
 
