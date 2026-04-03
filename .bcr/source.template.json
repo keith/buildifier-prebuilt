@@ -1,5 +1,5 @@
 {
-    "url": "https://github.com/keith/buildifier-prebuilt/archive/refs/tags/{TAG}.tar.gz",
+    "url": "https://github.com/keith/buildifier-prebuilt/releases/download/{TAG}/buildifier-prebuilt.{TAG}.tar.gz",
     "integrity": "",
     "strip_prefix": "buildifier-prebuilt-{TAG}"
 }
