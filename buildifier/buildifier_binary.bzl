@@ -2,7 +2,10 @@
 Simple rule for running buildifier from the toolchain config
 """
 
+load("@bazel_features//:features.bzl", "bazel_features")
 load("@platforms//host:constraints.bzl", "HOST_CONSTRAINTS")
+
+_TEST_TOOLCHAIN = bazel_features.toolchains.has_default_test_toolchain_type
 
 def _buildifier_binary(ctx):
     buildifier = ctx.toolchains["@buildifier_prebuilt//buildifier:toolchain"]._tool
@@ -22,8 +25,11 @@ def _buildifier_binary(ctx):
 
 buildifier_binary = rule(
     implementation = _buildifier_binary,
-    attrs = {},
-    exec_compatible_with = HOST_CONSTRAINTS,
-    toolchains = ["@buildifier_prebuilt//buildifier:toolchain"],
+    exec_compatible_with = [] if _TEST_TOOLCHAIN else HOST_CONSTRAINTS,
+    toolchains = [
+        "@buildifier_prebuilt//buildifier:toolchain",
+    ] + ([
+        "@bazel_tools//tools/test:default_test_toolchain_type",
+    ] if _TEST_TOOLCHAIN else []),
     executable = True,
 )

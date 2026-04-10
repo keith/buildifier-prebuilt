@@ -34,6 +34,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: bazelisk test //:all_integration_tests
+    - name: Run with extra exec platforms
+      run: bazelisk run //:buildifier --extra_execution_platforms=//:non_host_platform,@platforms//host -- -help
 
   example_simple:
     strategy:
