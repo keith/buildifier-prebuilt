@@ -4,6 +4,7 @@ exports_files(
     [
         "runner.bash.template",
         "runner.bat.template",
+        "WORKSPACE",
     ],
     visibility = ["//visibility:public"],
 )
