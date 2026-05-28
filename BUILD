@@ -58,6 +58,15 @@ alias(
 
 # MARK: - Integration Test
 
+# A platform used for tests that must not match the host platform
+platform(
+    name = "non_host_platform",
+    constraint_values = [
+        "@platforms//os:linux",
+        "@platforms//cpu:riscv64",
+    ],
+)
+
 filegroup(
     name = "local_repository_files",
     srcs = [

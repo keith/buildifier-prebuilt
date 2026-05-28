@@ -2,6 +2,7 @@
 Simple rule for running buildozer from the toolchain config
 """
 
+load("@bazel_features//:features.bzl", "bazel_features")
 load("@platforms//host:constraints.bzl", "HOST_CONSTRAINTS")
 
 def _buildozer_binary(ctx):
@@ -22,8 +23,11 @@ def _buildozer_binary(ctx):
 
 buildozer_binary = rule(
     implementation = _buildozer_binary,
-    attrs = {},
-    exec_compatible_with = HOST_CONSTRAINTS,
-    toolchains = ["@buildifier_prebuilt//buildozer:toolchain"],
+    exec_compatible_with = [] if bazel_features.toolchains.has_default_test_toolchain_type else HOST_CONSTRAINTS,
+    toolchains = [
+        "@buildifier_prebuilt//buildozer:toolchain",
+    ] + ([
+        "@bazel_tools//tools/test:default_test_toolchain_type",
+    ] if bazel_features.toolchains.has_default_test_toolchain_type else []),
     executable = True,
 )

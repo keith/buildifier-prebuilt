@@ -2,6 +2,7 @@
 Rules to use the prebuilt buildifier / buildozer binaries
 """
 
+load("@bazel_features//:features.bzl", "bazel_features")
 load("@platforms//host:constraints.bzl", "HOST_CONSTRAINTS")
 load("//buildifier:buildifier_binary.bzl", _buildifier_binary = "buildifier_binary")
 load(
@@ -20,8 +21,12 @@ def _buildifier_impl(ctx):
 buildifier = rule(
     implementation = _buildifier_impl,
     attrs = buildifier_attr_factory(test_rule = False),
-    exec_compatible_with = HOST_CONSTRAINTS,
-    toolchains = ["@buildifier_prebuilt//buildifier:toolchain"],
+    exec_compatible_with = [] if bazel_features.toolchains.has_default_test_toolchain_type else HOST_CONSTRAINTS,
+    toolchains = [
+        "@buildifier_prebuilt//buildifier:toolchain",
+    ] + ([
+        "@bazel_tools//tools/test:default_test_toolchain_type",
+    ] if bazel_features.toolchains.has_default_test_toolchain_type else []),
     executable = True,
 )
 
@@ -32,7 +37,15 @@ _buildifier_test = rule(
     implementation = _buildifier_test_impl,
     attrs = buildifier_attr_factory(test_rule = True),
     exec_compatible_with = HOST_CONSTRAINTS,
-    toolchains = ["@buildifier_prebuilt//buildifier:toolchain"],
+    exec_groups = {
+        "test": exec_group(
+            toolchains = [
+                "@buildifier_prebuilt//buildifier:toolchain",
+            ] + ([
+                "@bazel_tools//tools/test:default_test_toolchain_type",
+            ] if bazel_features.toolchains.has_default_test_toolchain_type else []),
+        ),
+    },
     test = True,
 )
 

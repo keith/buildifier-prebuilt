@@ -142,7 +142,10 @@ def buildifier_impl_factory(ctx, *, test_rule):
             fail("Cannot use 'no_sandbox' without a 'workspace'")
         workspace = ctx.file.workspace.path
 
-    toolchain = ctx.toolchains["@buildifier_prebuilt//buildifier:toolchain"]
+    if test_rule:
+        toolchain = ctx.exec_groups["test"].toolchains["@buildifier_prebuilt//buildifier:toolchain"]
+    else:
+        toolchain = ctx.toolchains["@buildifier_prebuilt//buildifier:toolchain"]
     buildifier = toolchain._tool
     runner = toolchain._runner
 
