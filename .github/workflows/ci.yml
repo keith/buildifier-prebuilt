@@ -21,7 +21,7 @@ jobs:
     env:
       USE_BAZEL_VERSION: ${{ matrix.bazel_version }}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v6
     - name: Execute Tests
       shell: bash
       env:
@@ -47,7 +47,7 @@ jobs:
     env:
       USE_BAZEL_VERSION: ${{ matrix.bazel_version }}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v6
     - name: Test
       shell: bash
       working-directory: examples/simple
@@ -63,7 +63,7 @@ jobs:
     env:
       USE_BAZEL_VERSION: ${{ matrix.bazel_version }}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v6
     - name: Test
       shell: bash
       working-directory: examples/specify_assets
@@ -79,7 +79,7 @@ jobs:
     env:
       USE_BAZEL_VERSION: ${{ matrix.bazel_version }}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v6
     - name: Test
       shell: bash
       working-directory: examples/bzlmod
@@ -95,7 +95,7 @@ jobs:
     env:
       USE_BAZEL_VERSION: ${{ matrix.bazel_version }}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v6
     - name: Test
       shell: bash
       working-directory: examples/bzlmod_specify_assets
