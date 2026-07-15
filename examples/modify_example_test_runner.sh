@@ -45,10 +45,12 @@ cd "${scratch_dir}"
 # Run the buildifier rule check.
 "${bazel}" run //:buildifier.check || fail "Expected //:buildifier.check to succeed."
 
-# # Execute buildozer command
-# "${bazel}" run -- @buildifier_prebuilt//:buildozer \
-#   'comment Comment\ added\ by\ test.' //:buildifier.check || \
-#   fail "Expected buildozer command to succeed."
+# Execute buildozer and verify that it modifies the source workspace.
+"${bazel}" run -- @buildifier_prebuilt//:buildozer \
+  'comment Comment\ added\ by\ test.' //:buildifier.check || \
+  fail "Expected buildozer command to succeed."
+grep -Fq '# Comment added by test.' BUILD || \
+  fail "Expected buildozer to modify the workspace BUILD file."
 
 # Execute buildifier directly
 "${bazel}" run -- @buildifier_prebuilt//:buildifier -r "${PWD}" || \
@@ -57,4 +59,3 @@ cd "${scratch_dir}"
 
 # Ensure that the workspace works properly
 "${bazel}" test //... || fail "Expected tests to succeed in the scratch directory."
-

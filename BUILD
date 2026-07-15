@@ -2,6 +2,8 @@ load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
 exports_files(
     [
+        "binary_runner.bash.template",
+        "binary_runner.bat.template",
         "runner.bash.template",
         "runner.bat.template",
         "WORKSPACE",
@@ -74,6 +76,8 @@ filegroup(
         "BUILD",
         "MODULE.bazel",
         "WORKSPACE",
+        "binary_runner.bash.template",
+        "binary_runner.bat.template",
         "runner.bash.template",
         "runner.bat.template",
         "//buildifier:all_files",
