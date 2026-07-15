@@ -196,20 +196,21 @@ function issue_in_file() {
 function expect_buildifier_check_failure() {
     local runfiles_flag=$1
     local exit_code=0
-    local expected_exit_code=123
 
     bazel run \
         "${runfiles_flag}" \
         //:buildifier.check >>"${TEST_log}" 2>&1 || exit_code=$?
 
-    # The Windows batch runner forwards buildifier's status, while the Unix
-    # launcher maps a non-zero executable status to Bazel's run-failure code.
-    if is_windows; then
-        expected_exit_code=4
+    if [[ ${exit_code} -eq 0 ]]; then
+        fail "check exited successfully despite intentional formatting issues"
     fi
-    if [[ ${exit_code} -ne ${expected_exit_code} ]]; then
-        fail "check exited with code ${exit_code}; expected ${expected_exit_code}"
-    fi
+
+    expect_log "Build completed successfully" "Bazel failed before running buildifier"
+    expect_log "Running command line: bazel-bin/buildifier\.check" "Bazel did not run buildifier"
+    expect_not_log "^ERROR:" "unexpected Bazel error while running buildifier"
+    expect_log "$(issue_in_file MODULE.bazel)" "deliberate buildifier issue in MODULE.bazel not found"
+    expect_log "$(issue_in_file BUILD)" "deliberate buildifier issue in BUILD not found"
+    expect_log "$(issue_in_file WORKSPACE)" "deliberate buildifier issue in WORKSPACE not found"
 }
 
 function assert_fix_changed_files() {
@@ -235,7 +236,6 @@ function test_buildifier_check_with_runfiles() {
     create_simple_workspace >"${TEST_log}"
 
     expect_buildifier_check_failure --enable_runfiles
-    expect_log "$(issue_in_file WORKSPACE)" "deliberate buildifier issue in WORKSPACE not found"
 }
 
 function test_buildifier_check_without_runfiles() {
@@ -247,7 +247,6 @@ function test_buildifier_check_without_runfiles() {
     create_simple_workspace >"${TEST_log}"
 
     expect_buildifier_check_failure --noenable_runfiles
-    expect_log "$(issue_in_file WORKSPACE)" "deliberate buildifier issue in WORKSPACE not found"
 }
 
 function test_buildifier_fix_with_runfiles() {
