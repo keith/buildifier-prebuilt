@@ -239,11 +239,6 @@ function test_buildifier_check_with_runfiles() {
 }
 
 function test_buildifier_check_without_runfiles() {
-    if ! is_windows; then
-        # https://github.com/keith/buildifier-prebuilt/issues/91
-        echo "SKIPPED --noenable_runfiles only supported by buildifier_prebuilt on windows"
-        return 0
-    fi
     create_simple_workspace >"${TEST_log}"
 
     expect_buildifier_check_failure --noenable_runfiles
@@ -261,11 +256,6 @@ function test_buildifier_fix_with_runfiles() {
 }
 
 function test_buildifier_fix_without_runfiles() {
-    if ! is_windows; then
-        # https://github.com/keith/buildifier-prebuilt/issues/91
-        echo "SKIPPED --noenable_runfiles only supported by buildifier_prebuilt on windows"
-        return 0
-    fi
     create_simple_workspace >"${TEST_log}"
     cp BUILD orig-BUILD-file
 
