@@ -232,6 +232,24 @@ function assert_fix_changed_files() {
     fi
 }
 
+function test_buildifier_test_rejects_unformatted_build() {
+    local exit_code=0
+
+    create_simple_workspace >"${TEST_log}"
+
+    env -u BUILD_WORKSPACE_DIRECTORY bazel test \
+        --enable_runfiles \
+        --test_output=errors \
+        //:buildifier.test >>"${TEST_log}" 2>&1 || exit_code=$?
+
+    if [[ ${exit_code} -eq 0 ]]; then
+        fail "buildifier.test passed despite intentional formatting issues"
+    fi
+
+    expect_log "//:buildifier\.test.*FAILED" "buildifier.test did not report a test failure"
+    expect_log "$(issue_in_file BUILD)" "deliberate buildifier issue in BUILD not found"
+}
+
 function test_buildifier_check_with_runfiles() {
     create_simple_workspace >"${TEST_log}"
 
