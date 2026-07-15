@@ -2,9 +2,9 @@
 
 set -euo pipefail
 
-BUILDIFIER_SHORT_PATH=@@BUILDIFIER_SHORT_PATH@@
-ARGS=@@ARGS@@
-WORKSPACE="@@WORKSPACE@@"
+BUILDIFIER_SHORT_PATH={BUILDIFIER_SHORT_PATH}
+ARGS={ARGS}
+WORKSPACE="{WORKSPACE}"
 
 function resolve_runfile() {
   local path=$1
@@ -73,7 +73,7 @@ fi
 
 # Run buildifier on all starlark files
 find . \
-  @@EXCLUDE_PATTERNS@@ \
+  {EXCLUDE_PATTERNS} \
   -type "${FIND_FILE_TYPE:-f}" \
   \( -name '*.bzl' \
     -o -name '*.sky' \
