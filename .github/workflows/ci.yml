@@ -34,9 +34,9 @@ jobs:
       if: runner.os != 'Windows'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: bazelisk test //:all_integration_tests
+      run: bazelisk test //examples:integration_tests
     - name: Run with extra exec platforms
-      run: bazelisk run //:buildifier --extra_execution_platforms="//:non_host_platform,@platforms//host" '--' -help
+      run: bazelisk run //:buildifier --extra_execution_platforms="//tests:non_host_platform,@platforms//host" '--' -help
 
   example_simple:
     strategy:
