@@ -38,7 +38,8 @@ __wsdir=0
 function create_bazelrc() {
     wsdir=$1
     cat >${wsdir}/.bazelrc << EOF
-common --noenable_bzlmod
+common --enable_bzlmod
+common --noenable_workspace
 startup --windows_enable_symlinks
 common --noshow_progress
 EOF
@@ -59,6 +60,19 @@ load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 bazel_skylib_workspace()
 load("@buildifier_prebuilt//:defs.bzl", "buildifier_prebuilt_register_toolchains")
 buildifier_prebuilt_register_toolchains()
+EOF
+}
+
+function create_module_file() {
+    wsdir=$1
+    buildifier_dir=$2
+    cat >${wsdir}/MODULE.bazel << EOF
+module(name = "simple_example")
+bazel_dep(name = "buildifier_prebuilt", version = "0.0.0")
+local_path_override(
+    module_name = "buildifier_prebuilt",
+    path = "$buildifier_dir",
+)
 EOF
 }
 
@@ -114,6 +128,7 @@ function create_simple_workspace() {
     mkdir -p ${__wsdir}
 
     create_bazelrc ${__wsdir}
+    create_module_file ${__wsdir} $buildifier_dir
     create_workspace_file ${__wsdir} $buildifier_dir
     create_build_file "${__wsdir}/BUILD"
     cd "${__wsdir}"
@@ -178,35 +193,44 @@ function issue_in_file() {
 
 # MARK - Test Cases
 
-function test_buildifier_is_invoked_with_runfiles() {
-    create_simple_workspace >"${TEST_log}"
+function expect_buildifier_check_failure() {
+    local runfiles_flag=$1
+    local exit_code=0
 
-    # run buildifier check and ignore exit status
     bazel run \
-        --enable_runfiles \
-        //:buildifier.check >>"${TEST_log}" 2>&1 || true
+        "${runfiles_flag}" \
+        //:buildifier.check >>"${TEST_log}" 2>&1 || exit_code=$?
 
-    expect_log "Running command line: bazel-bin/buildifier\.check"
+    # `bazel run` maps any non-zero executable status to 123. Build or analysis
+    # failures use other Bazel exit codes and must not satisfy this assertion.
+    if [[ ${exit_code} -ne 123 ]]; then
+        fail "check exited with code ${exit_code}; expected Bazel's run-failure code 123"
+    fi
 }
 
-function test_buildifier_is_invoked_without_runfiles() {
-    create_simple_workspace >"${TEST_log}"
+function assert_fix_changed_files() {
+    local grep_exit_code=0
+    local diff_exit_code=0
 
-    # run buildifier check and ignore exit status
-    bazel run \
-        --noenable_runfiles \
-        //:buildifier.check >>"${TEST_log}" 2>&1 || true
+    grep -xq "$(issue_in_file WORKSPACE)" "${TEST_log}" || grep_exit_code=$?
+    if [[ ${grep_exit_code} -eq 0 ]]; then
+        fail "deliberate buildifier issue in WORKSPACE should have been fixed but it still exists"
+    elif [[ ${grep_exit_code} -ne 1 ]]; then
+        fail "grep failed with code ${grep_exit_code} while checking buildifier output"
+    fi
 
-    expect_log "Running command line: bazel-bin/buildifier\.check"
+    diff orig-BUILD-file BUILD >>"${TEST_log}" || diff_exit_code=$?
+    if [[ ${diff_exit_code} -eq 0 ]]; then
+        fail "Expected BUILD to have changed from original"
+    elif [[ ${diff_exit_code} -ne 1 ]]; then
+        fail "diff failed with code ${diff_exit_code} while checking formatted BUILD"
+    fi
 }
 
 function test_buildifier_check_with_runfiles() {
     create_simple_workspace >"${TEST_log}"
 
-    bazel run \
-        --enable_runfiles \
-        //:buildifier.check >>"${TEST_log}" 2>&1 && fail "check exited with success code but should have failed"
-
+    expect_buildifier_check_failure --enable_runfiles
     expect_log "$(issue_in_file WORKSPACE)" "deliberate buildifier issue in WORKSPACE not found"
 }
 
@@ -218,10 +242,7 @@ function test_buildifier_check_without_runfiles() {
     fi
     create_simple_workspace >"${TEST_log}"
 
-    bazel run \
-        --noenable_runfiles \
-        //:buildifier.check >>"${TEST_log}" 2>&1 && fail "check exited with success code but should have failed"
-
+    expect_buildifier_check_failure --noenable_runfiles
     expect_log "$(issue_in_file WORKSPACE)" "deliberate buildifier issue in WORKSPACE not found"
 }
 
@@ -229,13 +250,11 @@ function test_buildifier_fix_with_runfiles() {
     create_simple_workspace >"${TEST_log}"
     cp BUILD orig-BUILD-file
 
-    bazel run //:buildifier.fix --enable_runfiles >>"${TEST_log}" 2>&1 || fail "fix exited with non-zero code but should have succeeded"
-    bazel run //:buildifier.check --enable_runfiles >>"${TEST_log}" 2>&1 || fail "check exited with non-zero code but should have succeeded"
+    bazel run --enable_runfiles //:buildifier.fix >>"${TEST_log}" 2>&1 || fail "fix exited with non-zero code but should have succeeded"
+    bazel run --enable_runfiles //:buildifier.check >>"${TEST_log}" 2>&1 || fail "check exited with non-zero code but should have succeeded"
 
     expect_log "Running command line: bazel-bin/buildifier\.check"
-    grep -xq "$(issue_in_file WORKSPACE)" "${TEST_log}" && fail "deliberate buildifier issue in WORKSPACE should have been fixed but it still exists" || true
-    diff orig-BUILD-file BUILD >>"${TEST_log}" && fail "Expected BUILD to have changed from original" || true
-    return 0
+    assert_fix_changed_files
 }
 
 function test_buildifier_fix_without_runfiles() {
@@ -247,13 +266,11 @@ function test_buildifier_fix_without_runfiles() {
     create_simple_workspace >"${TEST_log}"
     cp BUILD orig-BUILD-file
 
-    bazel run //:buildifier.fix --noenable_runfiles >>"${TEST_log}" 2>&1 || fail "fix exited with non-zero code but should have succeeded"
-    bazel run //:buildifier.check --noenable_runfiles >>"${TEST_log}" 2>&1 || fail "check exited with non-zero code but should have succeeded"
+    bazel run --noenable_runfiles //:buildifier.fix >>"${TEST_log}" 2>&1 || fail "fix exited with non-zero code but should have succeeded"
+    bazel run --noenable_runfiles //:buildifier.check >>"${TEST_log}" 2>&1 || fail "check exited with non-zero code but should have succeeded"
 
     expect_log "Running command line: bazel-bin/buildifier\.check"
-    grep -xq "$(issue_in_file WORKSPACE)" "${TEST_log}" && fail "deliberate buildifier issue in WORKSPACE should have been fixed but it still exists" || true
-    diff orig-BUILD-file BUILD >>"${TEST_log}" && fail "Expected BUILD to have changed from original" || true
-    return 0
+    assert_fix_changed_files
 }
 
 run_suite "buildifier suite"

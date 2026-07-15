@@ -1,3 +1,5 @@
+load("@rules_shell//shell:sh_library.bzl", "sh_library")
+
 # https://www.stevenengelhardt.com/2023/02/26/practical-bazel-using-bazels-bash-unittest-framework/
 
 sh_library(
@@ -6,5 +8,5 @@ sh_library(
         "unittest.bash",
         "unittest_utils.sh",
     ],
-    visibility = ["//visibility:public"],
+    visibility = ["//tests:__subpackages__"],
 )
