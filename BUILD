@@ -11,6 +11,22 @@ exports_files(
     visibility = ["//visibility:public"],
 )
 
+# MARK: - Aliases
+
+alias(
+    name = "buildifier",
+    actual = "//buildifier",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "buildozer",
+    actual = "//buildozer",
+    visibility = ["//visibility:public"],
+)
+
+# MARK: - bzl_library targets
+
 bzl_library(
     name = "defs",
     srcs = ["defs.bzl"],
@@ -45,33 +61,11 @@ bzl_library(
     ],
 )
 
-# MARK: - Aliases
-
-alias(
-    name = "buildifier",
-    actual = "//buildifier",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "buildozer",
-    actual = "//buildozer",
-    visibility = ["//visibility:public"],
-)
-
 # MARK: - Integration Test
-
-# A platform used for tests that must not match the host platform
-platform(
-    name = "non_host_platform",
-    constraint_values = [
-        "@platforms//os:linux",
-        "@platforms//cpu:riscv64",
-    ],
-)
 
 filegroup(
     name = "local_repository_files",
+    testonly = True,
     srcs = [
         "BUILD",
         "MODULE.bazel",
@@ -83,17 +77,5 @@ filegroup(
         "//buildifier:all_files",
         "//buildozer:all_files",
     ] + glob(["*.bzl"]),
-    visibility = ["//:__subpackages__"],
-)
-
-test_suite(
-    name = "all_integration_tests",
-    tags = [
-        "exclusive",
-        "manual",
-    ],
-    tests = [
-        "//examples:integration_tests",
-    ],
     visibility = ["//:__subpackages__"],
 )
