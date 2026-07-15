@@ -7,6 +7,7 @@ load("//:buildtools.bzl", "buildtools")
 def _buildifier_toolchain(ctx):
     return [
         platform_common.ToolchainInfo(
+            _binary_runner = ctx.attr.binary_runner,
             _tool = ctx.executable.tool,
             _runner = ctx.attr.runner,
         ),
@@ -15,6 +16,11 @@ def _buildifier_toolchain(ctx):
 prebuilt_toolchain = rule(
     _buildifier_toolchain,
     attrs = {
+        "binary_runner": attr.label(
+            allow_single_file = True,
+            mandatory = True,
+            doc = "The templated runner script for invoking the tool directly",
+        ),
         "tool": attr.label(
             allow_single_file = True,
             mandatory = True,
@@ -42,10 +48,12 @@ def declare_toolchain(tool_name, tool, os, arch):  # buildifier: disable=unnamed
     """
 
     name = buildtools.create_unique_name(name = tool_name, platform = os, arch = arch)
+    binary_runner = "@buildifier_prebuilt//:binary_runner.bat.template" if os == "windows" else "@buildifier_prebuilt//:binary_runner.bash.template"
     buildifier_runner = "@buildifier_prebuilt//:runner.bat.template" if os == "windows" else "@buildifier_prebuilt//:runner.bash.template"
 
     prebuilt_toolchain(
         name = name,
+        binary_runner = binary_runner,
         tool = tool,
         runner = buildifier_runner if tool_name == "buildifier" else None,
     )

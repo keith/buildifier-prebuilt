@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+TOOL_NAME='{TOOL_NAME}'
+TOOL_SHORT_PATH='{TOOL_SHORT_PATH}'
+
+function resolve_runfile() {
+  local path=$1
+  local runfiles_path=${path#../}
+  local candidate
+  local manifest
+  local line
+
+  if [[ -e "$path" ]]; then
+    realpath "$path"
+    return 0
+  fi
+
+  if [[ -n "${RUNFILES_DIR:-}" ]]; then
+    candidate="${RUNFILES_DIR}/${runfiles_path}"
+    if [[ -e "$candidate" ]]; then
+      realpath "$candidate"
+      return 0
+    fi
+  fi
+
+  for manifest in \
+    "${RUNFILES_MANIFEST_FILE:-}" \
+    "$0.runfiles_manifest" \
+    "$0.exe.runfiles_manifest" \
+    "$0.runfiles/MANIFEST"; do
+    [[ -n "$manifest" && -f "$manifest" ]] || continue
+    while IFS= read -r line; do
+      if [[ "$line" == "${runfiles_path} "* ]]; then
+        printf '%s\n' "${line#* }"
+        return 0
+      elif [[ "$line" == "$runfiles_path" ]]; then
+        printf '%s\n' "$runfiles_path"
+        return 0
+      fi
+    done < "$manifest"
+  done
+
+  return 1
+}
+
+if ! tool_path=$(resolve_runfile "$TOOL_SHORT_PATH"); then
+  echo "Unable to locate $TOOL_NAME runfile: $TOOL_SHORT_PATH" >&2
+  exit 1
+fi
+
+working_directory=${BUILD_WORKING_DIRECTORY:-${BUILD_WORKSPACE_DIRECTORY:-}}
+if [[ -n "$working_directory" ]]; then
+  if ! cd "$working_directory"; then
+    echo "Unable to change working directory: $working_directory" >&2
+    exit 1
+  fi
+fi
+
+exec "$tool_path" "$@"

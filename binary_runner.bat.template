@@ -1,0 +1,44 @@
+@echo off
+setlocal EnableDelayedExpansion
+
+set "TOOL_NAME={TOOL_NAME}"
+set "TOOL_FILENAME={TOOL_FILENAME}"
+set "TOOL_SHORT_PATH={TOOL_SHORT_PATH}"
+
+REM When runfiles are enabled, the tool is available through its short path.
+set "tool_path=%TOOL_SHORT_PATH:/=\%"
+for %%I in ("!tool_path!") do set "tool_path=%%~fI"
+
+REM Otherwise, locate the tool through the runfiles manifest.
+if not exist "!tool_path!" (
+    set "manifest_path=%RUNFILES_MANIFEST_FILE%"
+    if defined manifest_path if not exist "!manifest_path!" set "manifest_path="
+    if not defined manifest_path if exist "%~f0.runfiles_manifest" set "manifest_path=%~f0.runfiles_manifest"
+    if not defined manifest_path if exist "%~f0.exe.runfiles_manifest" set "manifest_path=%~f0.exe.runfiles_manifest"
+    if not defined manifest_path if exist "MANIFEST" set "manifest_path=MANIFEST"
+    if not defined manifest_path if exist "..\MANIFEST" set "manifest_path=..\MANIFEST"
+
+    if defined manifest_path (
+        for /F "tokens=1,* delims= " %%F IN ('findstr /l /c:"!TOOL_FILENAME!" "!manifest_path!"') DO (
+            set "tool_path=%%G"
+        )
+    )
+)
+
+if not exist "!tool_path!" (
+    echo Unable to locate !TOOL_NAME! runfile: !TOOL_SHORT_PATH! 1>&2
+    exit /b 1
+)
+
+set "working_directory=%BUILD_WORKSPACE_DIRECTORY%"
+if defined BUILD_WORKING_DIRECTORY set "working_directory=%BUILD_WORKING_DIRECTORY%"
+if defined working_directory (
+    cd /d "!working_directory!"
+    if errorlevel 1 (
+        echo Unable to change working directory: !working_directory! 1>&2
+        exit /b 1
+    )
+)
+
+"!tool_path!" %*
+exit /b !ERRORLEVEL!
