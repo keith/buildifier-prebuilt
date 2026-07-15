@@ -71,10 +71,12 @@ exit /b !ERRORLEVEL!
 REM Utility function to collect all wanted files.
 REM Exclude patterns are not supported by `dir.exe`.
 :collectFiles
-REM First, non-symlinked files
+REM First, files. Include symlinked files when traversing runfiles.
 pushd %~1
 REM echo collecting in %cd%
-FOR /F %%f IN ('dir /b/a:-d-l-h *.bzl *.sky *.bazel *.BUILD BUILD BUILD.*.oss WORKSPACE WORKSPACE.bzlmod WORKSPACE.oss WORKSPACE.*.oss 2^>nul') DO (
+set file_attributes=-d-l-h
+if defined follow_links set file_attributes=-d-h
+FOR /F %%f IN ('dir /b/a:!file_attributes! *.bzl *.sky *.bazel *.BUILD BUILD BUILD.*.oss WORKSPACE WORKSPACE.bzlmod WORKSPACE.oss WORKSPACE.*.oss 2^>nul') DO (
     set FILE=%~1\%%f
     REM remove .\ prefix
     set FILE=!FILE:.\=!
