@@ -182,9 +182,11 @@ function parent_source_dir() {
 
 function issue_in_file() {
     filename=$1
-    # output is different on windows (***** WORKSPACE) and unix (--- ./WORKSPACE)
+    # output is different on windows (Comparing files WORKSPACE and ...)
+    # and unix (--- ./WORKSPACE). Some Windows diff implementations omit the
+    # subsequent ***** WORKSPACE header, so use the line they all emit.
     if is_windows; then
-        echo "^\*\*\*\*\* ${filename}"
+        echo "^Comparing files ${filename} and .*$"
     else
         echo "^--- ./${filename}"
     fi

@@ -1,9 +1,9 @@
 @echo off
 setlocal EnableDelayedExpansion
 
-set BUILDIFIER_SHORT_PATH=@@BUILDIFIER_SHORT_PATH@@
-set EXTRA_ARGS=@@ARGS@@
-set WORKSPACE=@@WORKSPACE@@
+set BUILDIFIER_SHORT_PATH={BUILDIFIER_SHORT_PATH}
+set EXTRA_ARGS={ARGS}
+set WORKSPACE={WORKSPACE}
 
 REM When --enable_runfiles, we should be able to locate buildifier directly through symlink.
 set buildifier_path=%BUILDIFIER_SHORT_PATH:/=\%
