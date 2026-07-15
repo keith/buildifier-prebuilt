@@ -18,7 +18,7 @@ jobs:
         run: |
           set -euo pipefail
           archive="buildifier-prebuilt.$TAG.tar.gz"
-          COPYFILE_DISABLE=1 tar czvf "$archive" ./*
+          git archive --format=tar.gz --output="$archive" HEAD
           gh api repos/${{ github.repository }}/releases/generate-notes -f tag_name="$TAG" -f target_commitish="$GITHUB_REF_NAME" --jq .body > notes.md
           ./.github/generate-notes.sh "$TAG" "$archive" >> notes.md
           gh release create "$TAG" --title "$TAG" --target "$GITHUB_REF_NAME" --notes-file notes.md "$archive"
