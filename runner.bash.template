@@ -6,8 +6,50 @@ BUILDIFIER_SHORT_PATH=@@BUILDIFIER_SHORT_PATH@@
 ARGS=@@ARGS@@
 WORKSPACE="@@WORKSPACE@@"
 
-# Get the absolute path to the buildifier executable
-buildifier_short_path=$(readlink "$BUILDIFIER_SHORT_PATH")
+function resolve_runfile() {
+  local path=$1
+  local runfiles_path=${path#../}
+  local candidate
+  local manifest
+  local line
+
+  if [[ -e "$path" ]]; then
+    realpath "$path"
+    return 0
+  fi
+
+  if [[ -n "${RUNFILES_DIR:-}" ]]; then
+    candidate="${RUNFILES_DIR}/${runfiles_path}"
+    if [[ -e "$candidate" ]]; then
+      realpath "$candidate"
+      return 0
+    fi
+  fi
+
+  for manifest in \
+    "${RUNFILES_MANIFEST_FILE:-}" \
+    "$0.runfiles_manifest" \
+    "$0.exe.runfiles_manifest" \
+    "$0.runfiles/MANIFEST"; do
+    [[ -n "$manifest" && -f "$manifest" ]] || continue
+    while IFS= read -r line; do
+      if [[ "$line" == "${runfiles_path} "* ]]; then
+        printf '%s\n' "${line#* }"
+        return 0
+      elif [[ "$line" == "$runfiles_path" ]]; then
+        printf '%s\n' "$runfiles_path"
+        return 0
+      fi
+    done < "$manifest"
+  done
+
+  return 1
+}
+
+if ! buildifier_short_path=$(resolve_runfile "$BUILDIFIER_SHORT_PATH"); then
+  echo "Unable to locate buildifier runfile: $BUILDIFIER_SHORT_PATH" >&2
+  exit 1
+fi
 
 # Use TEST_WORKSPACE to determine if the script is being ran under a test
 if [[ -n "${TEST_WORKSPACE+x}" && -z "${BUILD_WORKSPACE_DIRECTORY+x}" ]]; then
