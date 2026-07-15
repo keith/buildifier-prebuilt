@@ -196,15 +196,19 @@ function issue_in_file() {
 function expect_buildifier_check_failure() {
     local runfiles_flag=$1
     local exit_code=0
+    local expected_exit_code=123
 
     bazel run \
         "${runfiles_flag}" \
         //:buildifier.check >>"${TEST_log}" 2>&1 || exit_code=$?
 
-    # `bazel run` maps any non-zero executable status to 123. Build or analysis
-    # failures use other Bazel exit codes and must not satisfy this assertion.
-    if [[ ${exit_code} -ne 123 ]]; then
-        fail "check exited with code ${exit_code}; expected Bazel's run-failure code 123"
+    # The Windows batch runner forwards buildifier's status, while the Unix
+    # launcher maps a non-zero executable status to Bazel's run-failure code.
+    if is_windows; then
+        expected_exit_code=4
+    fi
+    if [[ ${exit_code} -ne ${expected_exit_code} ]]; then
+        fail "check exited with code ${exit_code}; expected ${expected_exit_code}"
     fi
 }
 
