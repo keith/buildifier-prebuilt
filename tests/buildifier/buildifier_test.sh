@@ -14,14 +14,14 @@ source "${RUNFILES_DIR:-/dev/null}/$f" 2>/dev/null || \
 # return a unix-style path on all platforms
 # workaround for https://github.com/bazelbuild/bazel/issues/22803
 function rlocation_as_unix() {
-  path=$(rlocation ${1})
+  path=$(rlocation "${1}")
   case "$(uname -s)" in
   CYGWIN* | MINGW32* | MSYS* | MINGW*)
     path=${path//\\//} # backslashes to forward
     path=/${path//:/}  # d:/ to /d/
     ;;
   esac
-  echo $path
+  echo "$path"
 }
 
 # MARK - Locate Deps
@@ -37,7 +37,7 @@ __wsdir=0
 
 function create_bazelrc() {
     wsdir=$1
-    cat >${wsdir}/.bazelrc << EOF
+    cat >"${wsdir}/.bazelrc" << EOF
 common --enable_bzlmod
 common --noenable_workspace
 startup --windows_enable_symlinks
@@ -48,7 +48,7 @@ EOF
 function create_workspace_file() {
     wsdir=$1
     buildifier_dir=$2
-    cat >${wsdir}/WORKSPACE << EOF
+    cat >"${wsdir}/WORKSPACE" << EOF
 workspace(name = "simple_example")
 local_repository(
     name = "buildifier_prebuilt",
@@ -66,7 +66,7 @@ EOF
 function create_module_file() {
     wsdir=$1
     buildifier_dir=$2
-    cat >${wsdir}/MODULE.bazel << EOF
+    cat >"${wsdir}/MODULE.bazel" << EOF
 module(name = "simple_example")
 bazel_dep(name = "buildifier_prebuilt", version = "0.0.0")
 local_path_override(
@@ -78,10 +78,18 @@ EOF
 
 function create_build_file() {
     dest=$1
-    cat > $dest << EOF
+    cat >"$dest" << EOF
 
 
 load("@buildifier_prebuilt//:rules.bzl", "buildifier", "buildifier_test")
+
+buildifier(
+    name = "buildifier",
+    exclude_patterns = ["./.git/*"],
+    lint_mode = "fix",
+    lint_warnings = ["-cc-native"],
+    mode = "fix",
+)
 
 buildifier(
 
@@ -119,17 +127,26 @@ buildifier_test(
 EOF
 }
 
+function create_batch_sensitive_package() {
+    mkdir -p "pkg dir (batch)"
+    cat >"pkg dir (batch)/BUILD" << EOF
+filegroup(
+    name = "batch_sensitive_path",
+)
+EOF
+}
+
 function create_simple_workspace() {
     buildifier_dir=$(parent_source_dir)
-    __wsdir=testws_${RANDOM}
+    __wsdir=${1:-testws_${RANDOM}}
 
-    echo create_simple_workspace in `pwd`/${__wsdir}
-    echo new workspace references buildifier module in $buildifier_dir
-    mkdir -p ${__wsdir}
+    echo create_simple_workspace in "$(pwd)/${__wsdir}"
+    echo new workspace references buildifier module in "$buildifier_dir"
+    mkdir -p "${__wsdir}"
 
-    create_bazelrc ${__wsdir}
-    create_module_file ${__wsdir} $buildifier_dir
-    create_workspace_file ${__wsdir} $buildifier_dir
+    create_bazelrc "${__wsdir}"
+    create_module_file "${__wsdir}" "$buildifier_dir"
+    create_workspace_file "${__wsdir}" "$buildifier_dir"
     create_build_file "${__wsdir}/BUILD"
     cd "${__wsdir}"
 }
@@ -146,11 +163,22 @@ function native_path() {
     path=$1
     case "$(uname -s)" in
     CYGWIN* | MINGW32* | MSYS* | MINGW*)
-        path=$(cygpath -C ANSI -w -p "$path")
+        path=$(cygpath -C ANSI -w "$path")
         path=${path//\\//}
         ;;
     esac
-    echo $path
+    echo "$path"
+}
+
+function reported_output_user_root() {
+    if is_windows && [[ -d /c ]]; then
+        local root="/c/b/buildifier-prebuilt-test-${RANDOM}-${RANDOM}"
+        mkdir -p "$root"
+        native_path "$root"
+        return
+    fi
+
+    native_path "${TEST_TMPDIR}/reported-output-user-root"
 }
 
 function is_windows() {
@@ -164,20 +192,20 @@ function is_windows() {
 
 function parent_source_dir() {
     # this gives the source workspace in norunfiles mode (read MANIFEST)
-    parent_ws1=$(dirname $(rlocation "_main/WORKSPACE"))
+    parent_ws1=$(dirname "$(rlocation "_main/WORKSPACE")")
     if [[ ! -f WORKSPACE ]]; then
-        echo $parent_ws1
+        echo "$parent_ws1"
         return
     fi
     # this gives the source workspace in runfiles mode (follow symlink)
-    parent_ws2=$(dirname $(native_path $(realpath WORKSPACE)))
+    parent_ws2=$(dirname "$(native_path "$(realpath WORKSPACE)")")
     # pick the shorter result. Is there a canonical way to do this?
     if [[ ${#parent_ws1} -lt ${#parent_ws2} ]]; then
         parent_dir=$parent_ws1
     else
         parent_dir=$parent_ws2
     fi
-    echo $parent_dir
+    echo "$parent_dir"
 }
 
 function issue_in_file() {
@@ -210,6 +238,7 @@ function expect_buildifier_check_failure() {
     expect_log "Build completed successfully" "Bazel failed before running buildifier"
     expect_log "Running command line: bazel-bin/buildifier\.check" "Bazel did not run buildifier"
     expect_not_log "^ERROR:" "unexpected Bazel error while running buildifier"
+    expect_not_log "Failed to find buildifier at" "runner failed to resolve buildifier from runfiles"
     expect_log "$(issue_in_file MODULE.bazel)" "deliberate buildifier issue in MODULE.bazel not found"
     expect_log "$(issue_in_file BUILD)" "deliberate buildifier issue in BUILD not found"
     expect_log "$(issue_in_file WORKSPACE)" "deliberate buildifier issue in WORKSPACE not found"
@@ -284,6 +313,56 @@ function test_buildifier_fix_without_runfiles() {
 
     expect_log "Running command line: bazel-bin/buildifier\.check"
     assert_fix_changed_files
+}
+
+function test_buildifier_run_reported_ci_command_shape() {
+    create_simple_workspace >"${TEST_log}"
+
+    local output_user_root_arg
+    output_user_root_arg=$(reported_output_user_root)
+    local exit_code=0
+    local runner_ext="bash"
+    if is_windows; then
+        runner_ext="bat"
+    fi
+
+    bazel \
+        --output_user_root="${output_user_root_arg}" \
+        run \
+        --show_progress_rate_limit=5 \
+        --verbose_failures \
+        --jobs=30 \
+        --disk_cache= \
+        --experimental_repository_cache_hardlinks \
+        //:buildifier >>"${TEST_log}" 2>&1 || exit_code=$?
+
+    bazel --output_user_root="${output_user_root_arg}" shutdown >>"${TEST_log}" 2>&1 || true
+
+    if [[ ${exit_code} -ne 0 ]]; then
+        fail "bazel run //:buildifier failed with exit code ${exit_code}"
+    fi
+
+    expect_log "Running command line: bazel-bin/buildifier\.${runner_ext}"
+    expect_not_log "Failed to find buildifier at" "runner failed to resolve buildifier from runfiles"
+}
+
+function test_buildifier_fix_windows_batch_sensitive_paths() {
+    if ! is_windows; then
+        echo "SKIPPED windows batch path regression"
+        return 0
+    fi
+
+    create_simple_workspace "test ws (batch) ${RANDOM}" >"${TEST_log}"
+    create_batch_sensitive_package
+
+    for runfiles_flag in --enable_runfiles --noenable_runfiles; do
+        bazel run "${runfiles_flag}" //:buildifier.fix >>"${TEST_log}" 2>&1 || fail "fix exited with non-zero code for ${runfiles_flag}"
+        bazel run "${runfiles_flag}" //:buildifier.check >>"${TEST_log}" 2>&1 || fail "check exited with non-zero code for ${runfiles_flag}"
+    done
+
+    expect_not_log "Failed to find buildifier at" "runner failed to resolve buildifier from runfiles"
+    expect_not_log "was unexpected at this time" "batch parser failed on a workspace or file path"
+    expect_not_log "Unable to change working directory" "batch runner failed to cd to the workspace"
 }
 
 run_suite "buildifier suite"
