@@ -84,6 +84,14 @@ function create_build_file() {
 load("@buildifier_prebuilt//:rules.bzl", "buildifier", "buildifier_test")
 
 buildifier(
+    name = "buildifier",
+    exclude_patterns = ["./.git/*"],
+    lint_mode = "fix",
+    lint_warnings = ["-cc-native"],
+    mode = "fix",
+)
+
+buildifier(
 
     name = "buildifier.check",
     exclude_patterns = ["./.git/*"],
@@ -219,6 +227,7 @@ function expect_buildifier_check_failure() {
     expect_log "Build completed successfully" "Bazel failed before running buildifier"
     expect_log "Running command line: bazel-bin/buildifier\.check" "Bazel did not run buildifier"
     expect_not_log "^ERROR:" "unexpected Bazel error while running buildifier"
+    expect_not_log "Failed to find buildifier at" "runner failed to resolve buildifier from runfiles"
     expect_log "$(issue_in_file MODULE.bazel)" "deliberate buildifier issue in MODULE.bazel not found"
     expect_log "$(issue_in_file BUILD)" "deliberate buildifier issue in BUILD not found"
     expect_log "$(issue_in_file WORKSPACE)" "deliberate buildifier issue in WORKSPACE not found"
@@ -295,6 +304,37 @@ function test_buildifier_fix_without_runfiles() {
     assert_fix_changed_files
 }
 
+function test_buildifier_run_reported_ci_command_shape() {
+    create_simple_workspace >"${TEST_log}"
+
+    local output_user_root="${TEST_TMPDIR}/reported-output-user-root"
+    local output_user_root_arg
+    output_user_root_arg=$(native_path "${output_user_root}")
+    local exit_code=0
+    local runner_ext="bash"
+    if is_windows; then
+        runner_ext="bat"
+    fi
+
+    bazel \
+        --output_user_root="${output_user_root_arg}" \
+        run \
+        --show_progress_rate_limit=5 \
+        --verbose_failures \
+        --jobs=30 \
+        --disk_cache= \
+        //:buildifier >>"${TEST_log}" 2>&1 || exit_code=$?
+
+    bazel --output_user_root="${output_user_root_arg}" shutdown >>"${TEST_log}" 2>&1 || true
+
+    if [[ ${exit_code} -ne 0 ]]; then
+        fail "bazel run //:buildifier failed with exit code ${exit_code}"
+    fi
+
+    expect_log "Running command line: bazel-bin/buildifier\.${runner_ext}"
+    expect_not_log "Failed to find buildifier at" "runner failed to resolve buildifier from runfiles"
+}
+
 function test_buildifier_fix_windows_batch_sensitive_paths() {
     if ! is_windows; then
         echo "SKIPPED windows batch path regression"
@@ -309,6 +349,7 @@ function test_buildifier_fix_windows_batch_sensitive_paths() {
         bazel run "${runfiles_flag}" //:buildifier.check >>"${TEST_log}" 2>&1 || fail "check exited with non-zero code for ${runfiles_flag}"
     done
 
+    expect_not_log "Failed to find buildifier at" "runner failed to resolve buildifier from runfiles"
     expect_not_log "was unexpected at this time" "batch parser failed on a workspace or file path"
     expect_not_log "Unable to change working directory" "batch runner failed to cd to the workspace"
 }
