@@ -170,6 +170,17 @@ function native_path() {
     echo "$path"
 }
 
+function reported_output_user_root() {
+    if is_windows && [[ -d /c ]]; then
+        local root="/c/b/buildifier-prebuilt-test-${RANDOM}-${RANDOM}"
+        mkdir -p "$root"
+        native_path "$root"
+        return
+    fi
+
+    native_path "${TEST_TMPDIR}/reported-output-user-root"
+}
+
 function is_windows() {
     case "$(uname -s)" in
     CYGWIN* | MINGW32* | MSYS* | MINGW*)
@@ -307,9 +318,8 @@ function test_buildifier_fix_without_runfiles() {
 function test_buildifier_run_reported_ci_command_shape() {
     create_simple_workspace >"${TEST_log}"
 
-    local output_user_root="${TEST_TMPDIR}/reported-output-user-root"
     local output_user_root_arg
-    output_user_root_arg=$(native_path "${output_user_root}")
+    output_user_root_arg=$(reported_output_user_root)
     local exit_code=0
     local runner_ext="bash"
     if is_windows; then
@@ -323,6 +333,7 @@ function test_buildifier_run_reported_ci_command_shape() {
         --verbose_failures \
         --jobs=30 \
         --disk_cache= \
+        --experimental_repository_cache_hardlinks \
         //:buildifier >>"${TEST_log}" 2>&1 || exit_code=$?
 
     bazel --output_user_root="${output_user_root_arg}" shutdown >>"${TEST_log}" 2>&1 || true
