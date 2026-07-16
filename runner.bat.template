@@ -1,53 +1,52 @@
 @echo off
 setlocal EnableDelayedExpansion
 
-set BUILDIFIER_SHORT_PATH={BUILDIFIER_SHORT_PATH}
-set EXTRA_ARGS={ARGS}
-set WORKSPACE={WORKSPACE}
+set "BUILDIFIER_SHORT_PATH={BUILDIFIER_SHORT_PATH}"
+set "EXTRA_ARGS={ARGS}"
+set "WORKSPACE={WORKSPACE}"
 
 REM When --enable_runfiles, we should be able to locate buildifier directly through symlink.
-set buildifier_path=%BUILDIFIER_SHORT_PATH:/=\%
-for %%I in (%buildifier_path%) do (
+set "buildifier_path=%BUILDIFIER_SHORT_PATH:/=\%"
+for %%I in ("!buildifier_path!") do (
     set "buildifier_path=%%~fI"
 )
 
-set manifest_path=MANIFEST
-if not exist %manifest_path% (
-    set manifest_path=..\MANIFEST
+set "manifest_path=MANIFEST"
+if not exist "!manifest_path!" (
+    set "manifest_path=..\MANIFEST"
 )
-if not exist %manifest_path% (
+if not exist "!manifest_path!" (
     echo a MANIFEST file cannot be found
     exit /b 1
 )
 
 REM find the workspace directory in manifest. 
 REM No good way in bat to read path of a symlink's target
-set workspace_dir=
-for /F "tokens=2 delims= " %%F IN ('findstr /l /c:"WORKSPACE" %manifest_path%') DO (
-    set "workspace_dir=%%~dpF"
+set "workspace_dir="
+for /F "tokens=1,* delims= " %%F IN ('findstr /l /c:"WORKSPACE" "!manifest_path!"') DO (
+    set "workspace_dir=%%~dpG"
 )
 
 REM If the buildifier isn't immediately available via short_path from
 REM current directory, then parse the MANIFEST file to find buildifier.
-if not exist !buildifier_path! (
-    for /F "tokens=2 delims= " %%F IN ('findstr /l /c:"buildifier.exe" %manifest_path%') DO (
-        set "buildifier_path=%%F"
+if not exist "!buildifier_path!" (
+    for /F "tokens=1,* delims= " %%F IN ('findstr /l /c:"buildifier.exe" "!manifest_path!"') DO (
+        set "buildifier_path=%%G"
     )
 )
 
-if not exist !buildifier_path! (
+if not exist "!buildifier_path!" (
     echo Failed to find buildifier at !buildifier_path!
     exit /b 1
 )
 
+set "working_directory="
 if defined BUILD_WORKSPACE_DIRECTORY (
     rem either a build, or a run/build inside a test
-    echo cd %BUILD_WORKSPACE_DIRECTORY%
-    cd %BUILD_WORKSPACE_DIRECTORY%
+    set "working_directory=!BUILD_WORKSPACE_DIRECTORY!"
 ) else if defined TEST_WORKSPACE (
     if defined workspace_dir (
-        echo cd: %workspace_dir%
-        cd %workspace_dir%
+        set "working_directory=!workspace_dir!"
     ) else (
         REM this path doesn't seem required in bazel 7.2; manifest is always present
         echo set follow_links=1
@@ -56,32 +55,39 @@ if defined BUILD_WORKSPACE_DIRECTORY (
 ) else (
     echo Failed to find workspace to check 
 )
+if defined working_directory (
+    echo cd !working_directory!
+    cd /d "!working_directory!"
+    if errorlevel 1 (
+        echo Unable to change working directory: !working_directory! 1>&2
+        exit /b 1
+    )
+)
 
 call :collectFiles .
 
-if !files_to_analyze! == "" (
+if not defined files_to_analyze (
     echo Failed to find files to analyze
     exit /b 1
 )
-echo !buildifier_path! %EXTRA_ARGS% !files_to_analyze!
-!buildifier_path! %EXTRA_ARGS% !files_to_analyze!
+echo "!buildifier_path!" %EXTRA_ARGS% !files_to_analyze!
+"!buildifier_path!" %EXTRA_ARGS% !files_to_analyze!
 
 exit /b !ERRORLEVEL!
 
 REM Utility function to collect all wanted files.
 REM Exclude patterns are not supported by `dir.exe`.
 :collectFiles
+set "search_dir=%~1"
 REM First, files. Include symlinked files when traversing runfiles.
-pushd %~1
-REM echo collecting in %cd%
-set file_attributes=-d-l-h
-if defined follow_links set file_attributes=-d-h
-FOR /F %%f IN ('dir /b/a:!file_attributes! *.bzl *.sky *.bazel *.BUILD BUILD BUILD.*.oss WORKSPACE WORKSPACE.bzlmod WORKSPACE.oss WORKSPACE.*.oss 2^>nul') DO (
-    set FILE=%~1\%%f
+pushd "!search_dir!" 2>nul || exit /b 0
+set "file_attributes=-d-l-h"
+if defined follow_links set "file_attributes=-d-h"
+FOR /F "delims=" %%f IN ('dir /b/a:!file_attributes! "*.bzl" "*.sky" "*.bazel" "*.BUILD" "BUILD" "BUILD.*.oss" "WORKSPACE" "WORKSPACE.bzlmod" "WORKSPACE.oss" "WORKSPACE.*.oss" 2^>nul') DO (
+    set "FILE=!search_dir!\%%f"
     REM remove .\ prefix
-    set FILE=!FILE:.\=!
-    REM echo Found %~1\%%f adding !FILE!
-    set files_to_analyze=!files_to_analyze! !FILE!
+    set "FILE=!FILE:.\=!"
+    set "files_to_analyze=!files_to_analyze! "!FILE!""
 )
 popd
 
@@ -91,11 +97,11 @@ REM Interestingly, turning on the exclude hidden files option (-h) excludes the
 REM `.git` directory but not other directories starting with a `.` like
 REM `.github` or `.bcr`. I don't know why it works this way, but hey it works.
 if defined follow_links (
-    FOR /F %%d IN ('dir /b/a:d-h %~1 2^>nul') DO (
-        call :collectFiles "%~1\%%d"
+    FOR /F "delims=" %%d IN ('dir /b/a:d-h "!search_dir!" 2^>nul') DO (
+        call :collectFiles "!search_dir!\%%d"
     )
 ) else (
-    FOR /F %%d IN ('dir /b/a:d-l-h %~1 2^>nul') DO (
-        call :collectFiles "%~1\%%d"
+    FOR /F "delims=" %%d IN ('dir /b/a:d-l-h "!search_dir!" 2^>nul') DO (
+        call :collectFiles "!search_dir!\%%d"
     )
 )
