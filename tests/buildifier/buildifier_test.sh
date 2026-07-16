@@ -163,7 +163,7 @@ function native_path() {
     path=$1
     case "$(uname -s)" in
     CYGWIN* | MINGW32* | MSYS* | MINGW*)
-        path=$(cygpath -C ANSI -w -p "$path")
+        path=$(cygpath -C ANSI -w "$path")
         path=${path//\\//}
         ;;
     esac
