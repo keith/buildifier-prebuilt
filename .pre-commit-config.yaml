@@ -4,3 +4,8 @@ repos:
     hooks:
     -   id: buildifier
     -   id: buildifier-lint
+-   repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.11.0.1
+    hooks:
+    -   id: shellcheck
+        exclude: ^tests/unittest/

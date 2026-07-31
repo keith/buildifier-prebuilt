@@ -3,6 +3,7 @@
 # --- begin runfiles.bash initialization v3 ---
 # Copy-pasted from the Bazel Bash runfiles library v3.
 set -uo pipefail; set +e; f=bazel_tools/tools/bash/runfiles/runfiles.bash
+# shellcheck disable=SC1090
 source "${RUNFILES_DIR:-/dev/null}/$f" 2>/dev/null || \
   source "$(grep -sm1 "^$f " "${RUNFILES_MANIFEST_FILE:-/dev/null}" | cut -f2- -d' ')" 2>/dev/null || \
   source "$0.runfiles/$f" 2>/dev/null || \
@@ -14,21 +15,22 @@ source "${RUNFILES_DIR:-/dev/null}/$f" 2>/dev/null || \
 # return a unix-style path on all platforms
 # workaround for https://github.com/bazelbuild/bazel/issues/22803
 function rlocation_as_unix() {
-  path=$(rlocation ${1})
+  path=$(rlocation "${1}")
   case "$(uname -s)" in
   CYGWIN* | MINGW32* | MSYS* | MINGW*)
     path=${path//\\//} # backslashes to forward
     path=/${path//:/}  # d:/ to /d/
     ;;
   esac
-  echo $path
+  echo "$path"
 }
 
 # MARK - Locate Deps
 
 unittest_bash_location=_main/tests/unittest/unittest.bash
 unittest_bash="$(rlocation_as_unix "${unittest_bash_location}")"
-source ${unittest_bash} || exit 1
+# shellcheck disable=SC1090
+source "${unittest_bash}" || exit 1
 
 # MARK - Setup Workspace
 
@@ -37,7 +39,7 @@ __wsdir=0
 
 function create_bazelrc() {
     wsdir=$1
-    cat >${wsdir}/.bazelrc << EOF
+    cat >"${wsdir}/.bazelrc" << EOF
 common --enable_bzlmod
 common --noenable_workspace
 startup --windows_enable_symlinks
@@ -48,7 +50,7 @@ EOF
 function create_workspace_file() {
     wsdir=$1
     buildifier_dir=$2
-    cat >${wsdir}/WORKSPACE << EOF
+    cat >"${wsdir}/WORKSPACE" << EOF
 workspace(name = "simple_example")
 local_repository(
     name = "buildifier_prebuilt",
@@ -66,7 +68,7 @@ EOF
 function create_module_file() {
     wsdir=$1
     buildifier_dir=$2
-    cat >${wsdir}/MODULE.bazel << EOF
+    cat >"${wsdir}/MODULE.bazel" << EOF
 module(name = "simple_example")
 bazel_dep(name = "buildifier_prebuilt", version = "0.0.0")
 local_path_override(
@@ -78,7 +80,7 @@ EOF
 
 function create_build_file() {
     dest=$1
-    cat > $dest << EOF
+    cat >"${dest}" << EOF
 
 
 load("@buildifier_prebuilt//:rules.bzl", "buildifier", "buildifier_test")
@@ -123,18 +125,20 @@ function create_simple_workspace() {
     buildifier_dir=$(parent_source_dir)
     __wsdir=testws_${RANDOM}
 
-    echo create_simple_workspace in `pwd`/${__wsdir}
-    echo new workspace references buildifier module in $buildifier_dir
-    mkdir -p ${__wsdir}
+    echo "create_simple_workspace in $(pwd)/${__wsdir}"
+    echo "new workspace references buildifier module in ${buildifier_dir}"
+    mkdir -p "${__wsdir}"
 
-    create_bazelrc ${__wsdir}
-    create_module_file ${__wsdir} $buildifier_dir
-    create_workspace_file ${__wsdir} $buildifier_dir
+    create_bazelrc "${__wsdir}"
+    create_module_file "${__wsdir}" "${buildifier_dir}"
+    create_workspace_file "${__wsdir}" "${buildifier_dir}"
     create_build_file "${__wsdir}/BUILD"
     cd "${__wsdir}"
 }
 
 function tear_down() {
+    # TEST_log is initialized by the sourced unittest framework.
+    # shellcheck disable=SC2154
     bazel shutdown >>"${TEST_log}" 2>&1
     cd ..
     rm -rf "${__wsdir}"
@@ -150,7 +154,7 @@ function native_path() {
         path=${path//\\//}
         ;;
     esac
-    echo $path
+    echo "$path"
 }
 
 function is_windows() {
@@ -164,20 +168,20 @@ function is_windows() {
 
 function parent_source_dir() {
     # this gives the source workspace in norunfiles mode (read MANIFEST)
-    parent_ws1=$(dirname $(rlocation "_main/WORKSPACE"))
+    parent_ws1=$(dirname "$(rlocation "_main/WORKSPACE")")
     if [[ ! -f WORKSPACE ]]; then
-        echo $parent_ws1
+        echo "$parent_ws1"
         return
     fi
     # this gives the source workspace in runfiles mode (follow symlink)
-    parent_ws2=$(dirname $(native_path $(realpath WORKSPACE)))
+    parent_ws2=$(dirname "$(native_path "$(realpath WORKSPACE)")")
     # pick the shorter result. Is there a canonical way to do this?
     if [[ ${#parent_ws1} -lt ${#parent_ws2} ]]; then
         parent_dir=$parent_ws1
     else
         parent_dir=$parent_ws2
     fi
-    echo $parent_dir
+    echo "$parent_dir"
 }
 
 function issue_in_file() {
