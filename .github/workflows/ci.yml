@@ -12,6 +12,13 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  pre_commit:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+    - uses: actions/setup-python@v6
+    - uses: pre-commit/action@v3.0.1
+
   build:
     strategy:
       fail-fast: false
@@ -105,6 +112,7 @@ jobs:
   result:
     if: always()
     needs:
+      - pre_commit
       - build
       - example_simple
       - example_specify_assets
