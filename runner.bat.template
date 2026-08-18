@@ -2,7 +2,6 @@
 setlocal DisableDelayedExpansion
 
 set "BUILDIFIER_SHORT_PATH={BUILDIFIER_SHORT_PATH}"
-set "EXTRA_ARGS={ARGS}"
 set "BUILDIFIER_FORMAT={FORMAT}"
 set "BUILDIFIER_VERBOSE={VERBOSE}"
 set "WORKSPACE={WORKSPACE}"
@@ -67,22 +66,26 @@ REM merging per-batch diagnostics when JSON output is requested.
 set "BUILDIFIER_EXECUTABLE=%buildifier_path%"
 powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ^
     "$ErrorActionPreference = 'Stop';" ^
-    "$workspacePrefix = (Get-Location).Path.TrimEnd([char[]]@([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar)) + [IO.Path]::DirectorySeparatorChar;" ^
-    "$files = @(Get-ChildItem -LiteralPath . -Recurse -File | Where-Object {" ^
-        "($env:include_reparse_points -or -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint)) -and (" ^
-            "$_.Name -eq 'BUILD'" ^
-            "-or $_.Name -eq 'WORKSPACE'" ^
-            "-or $_.Name -eq 'WORKSPACE.bzlmod'" ^
-            "-or $_.Name -eq 'WORKSPACE.oss'" ^
-            "-or $_.Name -clike '*.bzl'" ^
-            "-or $_.Name -clike '*.sky'" ^
-            "-or $_.Name -clike '*.star'" ^
-            "-or $_.Name -clike '*.bazel'" ^
-            "-or $_.Name -clike '*.BUILD'" ^
-            "-or $_.Name -clike 'BUILD.*.oss'" ^
-            "-or $_.Name -clike 'WORKSPACE.*.oss'" ^
-        ")" ^
-    "} | ForEach-Object { $_.FullName.Substring($workspacePrefix.Length) });" ^
+    "$buildifierArgs = @({POWERSHELL_ARGS});" ^
+    "$files = @({SOURCE_FILES});" ^
+    "if ({SCAN_WORKSPACE}) {" ^
+        "$workspacePrefix = (Get-Location).Path.TrimEnd([char[]]@([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar)) + [IO.Path]::DirectorySeparatorChar;" ^
+        "$files = @(Get-ChildItem -LiteralPath . -Recurse -File | Where-Object {" ^
+            "($env:include_reparse_points -or -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint)) -and (" ^
+                "$_.Name -eq 'BUILD'" ^
+                "-or $_.Name -eq 'WORKSPACE'" ^
+                "-or $_.Name -eq 'WORKSPACE.bzlmod'" ^
+                "-or $_.Name -eq 'WORKSPACE.oss'" ^
+                "-or $_.Name -clike '*.bzl'" ^
+                "-or $_.Name -clike '*.sky'" ^
+                "-or $_.Name -clike '*.star'" ^
+                "-or $_.Name -clike '*.bazel'" ^
+                "-or $_.Name -clike '*.BUILD'" ^
+                "-or $_.Name -clike 'BUILD.*.oss'" ^
+                "-or $_.Name -clike 'WORKSPACE.*.oss'" ^
+            ")" ^
+        "} | ForEach-Object { $_.FullName.Substring($workspacePrefix.Length) });" ^
+    "};" ^
     "if ($files.Count -eq 0) { Write-Error 'Failed to find files to analyze'; exit 1 };" ^
     "$exitCode = 0;" ^
     "$jsonOutput = $env:BUILDIFIER_FORMAT -eq 'json';" ^
@@ -92,7 +95,7 @@ powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Comma
         "$end = [Math]::Min($i + 99, $files.Count - 1);" ^
         "$batch = @($files[$i..$end]);" ^
         "if ($jsonOutput) {" ^
-            "$batchText = (& $env:BUILDIFIER_EXECUTABLE %EXTRA_ARGS% $batch) -join [Environment]::NewLine;" ^
+            "$batchText = (& $env:BUILDIFIER_EXECUTABLE @buildifierArgs $batch) -join [Environment]::NewLine;" ^
             "$batchExitCode = $LASTEXITCODE;" ^
             "if ($batchExitCode -eq 0) {" ^
                 "$batchReport = $batchText | ConvertFrom-Json;" ^
@@ -100,7 +103,7 @@ powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Comma
                 "$jsonFiles += @($batchReport.files);" ^
             "}" ^
         "} else {" ^
-            "& $env:BUILDIFIER_EXECUTABLE %EXTRA_ARGS% $batch;" ^
+            "& $env:BUILDIFIER_EXECUTABLE @buildifierArgs $batch;" ^
             "$batchExitCode = $LASTEXITCODE;" ^
         "};" ^
         "if ($batchExitCode -ne 0 -and $exitCode -eq 0) { $exitCode = $batchExitCode };" ^
