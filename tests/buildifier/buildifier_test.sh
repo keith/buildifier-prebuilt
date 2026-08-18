@@ -123,7 +123,7 @@ EOF
 
 function create_simple_workspace() {
     buildifier_dir=$(parent_source_dir)
-    __wsdir=testws_${RANDOM}
+    __wsdir=${1:-testws_${RANDOM}}
 
     echo "create_simple_workspace in $(pwd)/${__wsdir}"
     echo "new workspace references buildifier module in ${buildifier_dir}"
@@ -238,6 +238,55 @@ function assert_fix_changed_files() {
     fi
 }
 
+function create_metacharacter_fixtures() {
+    local relative_directories=(
+        'control_directory'
+        'percent_%f'
+        'percent_%value%'
+        'bang_!value!'
+        'parentheses_(value)'
+        'ampersand_&_value'
+        'caret_^_value'
+        "expression_\${a}'"
+        "expression_\${a}'/%f"
+        'parentheses_(value)/percent_%f'
+        'ampersand_&_value/bang_!value!'
+    )
+
+    local index=0
+    local relative_directory
+    for relative_directory in "${relative_directories[@]}"; do
+        ((index += 1))
+        mkdir -p "fixture/${relative_directory}"
+        cat >"fixture/${relative_directory}/BUILD.bazel" << EOF
+filegroup(
+    name="fixture_${index}",
+)
+EOF
+    done
+
+    local filename
+    for filename in foo.bazel foo.BUILD defs.star WORKSPACE.bzlmod; do
+        ((index += 1))
+        cat >"fixture/control_directory/${filename}" << EOF
+filegroup(
+    name="fixture_${index}",
+)
+EOF
+    done
+}
+
+function assert_metacharacter_fixtures_were_fixed() {
+    local build_file
+    local fixture_count=0
+    while IFS= read -r -d '' build_file; do
+        ((fixture_count += 1))
+        grep -Fq '    name = "fixture_' "${build_file}" ||
+            fail "buildifier did not fix ${build_file}"
+    done < <(find fixture -type f -print0)
+    assert_equals 15 "${fixture_count}"
+}
+
 function test_buildifier_test_rejects_unformatted_build() {
     local exit_code=0
 
@@ -288,6 +337,19 @@ function test_buildifier_fix_without_runfiles() {
 
     expect_log "Running command line: bazel-bin/buildifier\.check"
     assert_fix_changed_files
+}
+
+function test_buildifier_fix_handles_metacharacters() {
+    create_simple_workspace "test ws (batch) ${RANDOM}" >"${TEST_log}"
+    create_metacharacter_fixtures
+
+    local runfiles_flag
+    for runfiles_flag in --noenable_runfiles --enable_runfiles; do
+        bazel run "${runfiles_flag}" //:buildifier.fix >>"${TEST_log}" 2>&1 ||
+            fail "fix exited with non-zero code for metacharacter paths using ${runfiles_flag}"
+    done
+
+    assert_metacharacter_fixtures_were_fixed
 }
 
 run_suite "buildifier suite"
