@@ -77,6 +77,7 @@ find . \
   -type "${FIND_FILE_TYPE:-f}" \
   \( -name '*.bzl' \
     -o -name '*.sky' \
+    -o -name '*.star' \
     -o -name '*.bazel' \
     -o -name BUILD \
     -o -name '*.BUILD' \
@@ -85,4 +86,4 @@ find . \
     -o -name WORKSPACE.bzlmod \
     -o -name WORKSPACE.oss \
     -o -name 'WORKSPACE.*.oss' \
-  \) -print | xargs "$buildifier_short_path" "${ARGS[@]}"
+  \) -exec "$buildifier_short_path" "${ARGS[@]}" {} +
