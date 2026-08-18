@@ -94,8 +94,9 @@ powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Comma
     "for ($i = 0; $i -lt $files.Count;) {" ^
         "$end = [Math]::Min($i + 99, $files.Count - 1);" ^
         "$batch = @($files[$i..$end]);" ^
+        "$invocationArgs = @($buildifierArgs) + $batch;" ^
         "if ($jsonOutput) {" ^
-            "$batchText = (& $env:BUILDIFIER_EXECUTABLE @buildifierArgs $batch) -join [Environment]::NewLine;" ^
+            "$batchText = (& $env:BUILDIFIER_EXECUTABLE @invocationArgs) -join [Environment]::NewLine;" ^
             "$batchExitCode = $LASTEXITCODE;" ^
             "if ($batchExitCode -eq 0) {" ^
                 "$batchReport = $batchText | ConvertFrom-Json;" ^
@@ -103,7 +104,7 @@ powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Comma
                 "$jsonFiles += @($batchReport.files);" ^
             "}" ^
         "} else {" ^
-            "& $env:BUILDIFIER_EXECUTABLE @buildifierArgs $batch;" ^
+            "& $env:BUILDIFIER_EXECUTABLE @invocationArgs;" ^
             "$batchExitCode = $LASTEXITCODE;" ^
         "};" ^
         "if ($batchExitCode -ne 0 -and $exitCode -eq 0) { $exitCode = $batchExitCode };" ^
