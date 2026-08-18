@@ -105,6 +105,12 @@ buildifier(
     mode = "fix",
 )
 
+buildifier(
+    name = "buildifier.json",
+    format = "json",
+    mode = "check",
+)
+
 buildifier_test(
     name = "buildifier.test",
     srcs = [      "BUILD"      ],
@@ -150,7 +156,7 @@ function native_path() {
     path=$1
     case "$(uname -s)" in
     CYGWIN* | MINGW32* | MSYS* | MINGW*)
-        path=$(cygpath -C ANSI -w -p "$path")
+        path=$(cygpath -C ANSI -w "$path")
         path=${path//\\//}
         ;;
     esac
@@ -287,6 +293,40 @@ function assert_metacharacter_fixtures_were_fixed() {
     assert_equals 15 "${fixture_count}"
 }
 
+function create_json_batch_fixtures() {
+    local index
+    mkdir -p json_fixtures
+    for ((index = 1; index <= 101; index++)); do
+        cat >"json_fixtures/fixture_${index}.bzl" << EOF
+value_${index}="needs formatting"
+EOF
+    done
+}
+
+function assert_windows_json_report() {
+    local report_path
+    report_path=$(native_path "$(realpath "$1")")
+
+    # shellcheck disable=SC2016
+    BUILDIFIER_JSON_REPORT="${report_path}" powershell.exe \
+        -NoLogo \
+        -NoProfile \
+        -NonInteractive \
+        -ExecutionPolicy Bypass \
+        -Command '
+            $report = Get-Content -Raw -LiteralPath $env:BUILDIFIER_JSON_REPORT | ConvertFrom-Json
+            if (@($report.files).Count -le 100) {
+                Write-Error "Expected more than 100 file diagnostics"
+                exit 1
+            }
+            $rooted = @($report.files | Where-Object { [IO.Path]::IsPathRooted($_.filename) })
+            if ($rooted.Count -ne 0) {
+                Write-Error "Expected workspace-relative filenames, found $($rooted[0].filename)"
+                exit 1
+            }
+        ' >>"${TEST_log}" 2>&1 || fail "buildifier output was not one valid JSON report with relative filenames"
+}
+
 function test_buildifier_test_rejects_unformatted_build() {
     local exit_code=0
 
@@ -350,6 +390,23 @@ function test_buildifier_fix_handles_metacharacters() {
     done
 
     assert_metacharacter_fixtures_were_fixed
+}
+
+function test_buildifier_json_handles_multiple_windows_batches() {
+    if ! is_windows; then
+        echo "SKIPPED windows JSON batching regression"
+        return 0
+    fi
+
+    create_simple_workspace >"${TEST_log}"
+    create_json_batch_fixtures
+
+    local runfiles_flag
+    for runfiles_flag in --noenable_runfiles --enable_runfiles; do
+        bazel run "${runfiles_flag}" //:buildifier.json >json-report 2>>"${TEST_log}" ||
+            fail "JSON check exited with non-zero code using ${runfiles_flag}"
+        assert_windows_json_report json-report
+    done
 }
 
 run_suite "buildifier suite"

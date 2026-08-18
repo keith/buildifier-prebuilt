@@ -3,6 +3,8 @@ setlocal DisableDelayedExpansion
 
 set "BUILDIFIER_SHORT_PATH={BUILDIFIER_SHORT_PATH}"
 set "EXTRA_ARGS={ARGS}"
+set "BUILDIFIER_FORMAT={FORMAT}"
+set "BUILDIFIER_VERBOSE={VERBOSE}"
 set "WORKSPACE={WORKSPACE}"
 
 REM When --enable_runfiles, we should be able to locate buildifier directly through symlink.
@@ -46,7 +48,6 @@ exit /b 1
 
 :build_workspace
 REM Either a build, or a run/build inside a test.
-echo cd /d "%BUILD_WORKSPACE_DIRECTORY%"
 cd /d "%BUILD_WORKSPACE_DIRECTORY%"
 if errorlevel 1 exit /b 1
 goto workspace_found
@@ -56,16 +57,17 @@ if not defined workspace_dir (
     set "include_reparse_points=1"
     goto workspace_found
 )
-echo cd /d "%workspace_dir%"
 cd /d "%workspace_dir%"
 if errorlevel 1 exit /b 1
 
 :workspace_found
-REM Keep discovered paths in PowerShell objects so cmd.exe never reparses them.
-REM Process files in batches to stay below CreateProcess' command-line limit.
+REM Keep discovered paths inside PowerShell so cmd.exe never reparses them.
+REM Process files in batches to stay below CreateProcess' command-line limit,
+REM merging per-batch diagnostics when JSON output is requested.
 set "BUILDIFIER_EXECUTABLE=%buildifier_path%"
 powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ^
     "$ErrorActionPreference = 'Stop';" ^
+    "$workspacePrefix = (Get-Location).Path.TrimEnd([char[]]@([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar)) + [IO.Path]::DirectorySeparatorChar;" ^
     "$files = @(Get-ChildItem -LiteralPath . -Recurse -File | Where-Object {" ^
         "($env:include_reparse_points -or -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint)) -and (" ^
             "$_.Name -eq 'BUILD'" ^
@@ -80,15 +82,37 @@ powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Comma
             "-or $_.Name -clike 'BUILD.*.oss'" ^
             "-or $_.Name -clike 'WORKSPACE.*.oss'" ^
         ")" ^
-    "});" ^
+    "} | ForEach-Object { $_.FullName.Substring($workspacePrefix.Length) });" ^
     "if ($files.Count -eq 0) { Write-Error 'Failed to find files to analyze'; exit 1 };" ^
     "$exitCode = 0;" ^
+    "$jsonOutput = $env:BUILDIFIER_FORMAT -eq 'json';" ^
+    "$jsonSuccess = $true;" ^
+    "$jsonFiles = @();" ^
     "for ($i = 0; $i -lt $files.Count;) {" ^
         "$end = [Math]::Min($i + 99, $files.Count - 1);" ^
         "$batch = @($files[$i..$end]);" ^
-        "& $env:BUILDIFIER_EXECUTABLE %EXTRA_ARGS% $batch.FullName;" ^
-        "if ($LASTEXITCODE -ne 0 -and $exitCode -eq 0) { $exitCode = $LASTEXITCODE };" ^
+        "if ($jsonOutput) {" ^
+            "$batchText = (& $env:BUILDIFIER_EXECUTABLE %EXTRA_ARGS% $batch) -join [Environment]::NewLine;" ^
+            "$batchExitCode = $LASTEXITCODE;" ^
+            "if ($batchExitCode -eq 0) {" ^
+                "$batchReport = $batchText | ConvertFrom-Json;" ^
+                "$jsonSuccess = $jsonSuccess -and [bool]$batchReport.success;" ^
+                "$jsonFiles += @($batchReport.files);" ^
+            "}" ^
+        "} else {" ^
+            "& $env:BUILDIFIER_EXECUTABLE %EXTRA_ARGS% $batch;" ^
+            "$batchExitCode = $LASTEXITCODE;" ^
+        "};" ^
+        "if ($batchExitCode -ne 0 -and $exitCode -eq 0) { $exitCode = $batchExitCode };" ^
         "$i = $end + 1;" ^
+    "};" ^
+    "if ($jsonOutput -and $exitCode -eq 0) {" ^
+        "$report = [ordered]@{ success = $jsonSuccess; files = [object[]]$jsonFiles };" ^
+        "if ($env:BUILDIFIER_VERBOSE -eq 'true') {" ^
+            "$report | ConvertTo-Json -Depth 10;" ^
+        "} else {" ^
+            "$report | ConvertTo-Json -Depth 10 -Compress;" ^
+        "}" ^
     "};" ^
     "exit $exitCode"
 exit /b %ERRORLEVEL%
