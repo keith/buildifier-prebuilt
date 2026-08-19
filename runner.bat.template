@@ -28,6 +28,7 @@ if not defined manifest_path (
 for /F "tokens=1,* delims= " %%F IN ('findstr /l /c:"buildifier.exe" "%manifest_path%"') DO set "buildifier_path=%%G"
 
 :buildifier_found
+for %%I in ("%buildifier_path%") do set "buildifier_path=%%~fsI"
 if not exist "%buildifier_path%" (
     echo Failed to find buildifier at "%buildifier_path%"
     exit /b 1
@@ -68,29 +69,6 @@ powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Comma
     "$ErrorActionPreference = 'Stop';" ^
     "$buildifierArgs = @({POWERSHELL_ARGS});" ^
     "$files = @({SOURCE_FILES});" ^
-    "function ConvertTo-NativeArgument([string]$argument) {" ^
-        "if ($argument.Length -gt 0 -and $argument -notmatch '[\s\x22]') { return $argument };" ^
-        "$escaped = [regex]::Replace($argument, '(\\*)\x22', ('$1$1\' + [char]34));" ^
-        "$escaped = [regex]::Replace($escaped, '(\\*)$', '$1$1');" ^
-        "return ([string][char]34) + $escaped + [char]34;" ^
-    "};" ^
-    "function Invoke-Buildifier([string[]]$arguments, [bool]$captureOutput) {" ^
-        "$startInfo = New-Object System.Diagnostics.ProcessStartInfo;" ^
-        "$startInfo.FileName = $env:BUILDIFIER_EXECUTABLE;" ^
-        "$startInfo.Arguments = (@($arguments | ForEach-Object { ConvertTo-NativeArgument $_ }) -join ' ');" ^
-        "$startInfo.UseShellExecute = $false;" ^
-        "$startInfo.RedirectStandardOutput = $captureOutput;" ^
-        "if ($captureOutput) { $startInfo.StandardOutputEncoding = [Text.Encoding]::UTF8 };" ^
-        "$process = New-Object System.Diagnostics.Process;" ^
-        "$process.StartInfo = $startInfo;" ^
-        "[void]$process.Start();" ^
-        "$output = $null;" ^
-        "if ($captureOutput) { $output = $process.StandardOutput.ReadToEnd() };" ^
-        "$process.WaitForExit();" ^
-        "$result = New-Object PSObject -Property @{ ExitCode = $process.ExitCode; Output = $output };" ^
-        "$process.Dispose();" ^
-        "return $result;" ^
-    "};" ^
     "if ({SCAN_WORKSPACE}) {" ^
         "$workspacePrefix = (Get-Location).Path.TrimEnd([char[]]@([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar)) + [IO.Path]::DirectorySeparatorChar;" ^
         "$files = @(Get-ChildItem -LiteralPath . -Recurse -File | Where-Object {" ^
@@ -118,12 +96,17 @@ powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Comma
         "$end = [Math]::Min($i + 99, $files.Count - 1);" ^
         "$batch = @($files[$i..$end]);" ^
         "$invocationArgs = @($buildifierArgs) + $batch;" ^
-        "$result = Invoke-Buildifier $invocationArgs $jsonOutput;" ^
-        "$batchExitCode = $result.ExitCode;" ^
-        "if ($jsonOutput -and $batchExitCode -eq 0) {" ^
-            "$batchReport = $result.Output | ConvertFrom-Json;" ^
-            "$jsonSuccess = $jsonSuccess -and [bool]$batchReport.success;" ^
-            "$jsonFiles += @($batchReport.files);" ^
+        "if ($jsonOutput) {" ^
+            "$batchText = (& $env:BUILDIFIER_EXECUTABLE @invocationArgs) -join [Environment]::NewLine;" ^
+            "$batchExitCode = $LASTEXITCODE;" ^
+            "if ($batchExitCode -eq 0) {" ^
+                "$batchReport = $batchText | ConvertFrom-Json;" ^
+                "$jsonSuccess = $jsonSuccess -and [bool]$batchReport.success;" ^
+                "$jsonFiles += @($batchReport.files);" ^
+            "}" ^
+        "} else {" ^
+            "& $env:BUILDIFIER_EXECUTABLE @invocationArgs;" ^
+            "$batchExitCode = $LASTEXITCODE;" ^
         "};" ^
         "if ($batchExitCode -ne 0 -and $exitCode -eq 0) { $exitCode = $batchExitCode };" ^
         "$i = $end + 1;" ^
