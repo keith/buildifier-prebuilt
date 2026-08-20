@@ -159,7 +159,7 @@ def buildifier_impl_factory(ctx, *, test_rule):
     source_files = [] if scan_workspace else [file.short_path for file in ctx.files.srcs]
 
     substitutions = {
-        "{ARGS}": shell.array_literal(args) if out_ext == ".bash" else shell.array_literal(args)[1:][:-1].replace("'", ""),
+        "{ARGS}": shell.array_literal(args),
         "{BUILDIFIER_SHORT_PATH}": shell.quote(buildifier.short_path) if out_ext == ".bash" else buildifier.short_path,
         "{EXCLUDE_PATTERNS}": exclude_patterns_str,
         "{FORMAT}": ctx.attr.format,

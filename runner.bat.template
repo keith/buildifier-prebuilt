@@ -2,21 +2,15 @@
 setlocal DisableDelayedExpansion
 
 set "BUILDIFIER_SHORT_PATH={BUILDIFIER_SHORT_PATH}"
-set "BUILDIFIER_FORMAT={FORMAT}"
-set "BUILDIFIER_VERBOSE={VERBOSE}"
-set "WORKSPACE={WORKSPACE}"
 
 REM When --enable_runfiles, we should be able to locate buildifier directly through symlink.
 set "buildifier_path=%BUILDIFIER_SHORT_PATH:/=\%"
-for %%I in ("%buildifier_path%") do set "buildifier_path=%%~fI"
 
 REM Find the runfiles manifest. Tests also use it to resolve the workspace.
-set "manifest_path=%RUNFILES_MANIFEST_FILE%"
-if defined manifest_path if not exist "%manifest_path%" set "manifest_path="
-if not defined manifest_path if exist "%~f0.runfiles_manifest" set "manifest_path=%~f0.runfiles_manifest"
-if not defined manifest_path if exist "%~f0.exe.runfiles_manifest" set "manifest_path=%~f0.exe.runfiles_manifest"
-if not defined manifest_path if exist "MANIFEST" set "manifest_path=MANIFEST"
-if not defined manifest_path if exist "..\MANIFEST" set "manifest_path=..\MANIFEST"
+set "manifest_path="
+for %%M in ("%RUNFILES_MANIFEST_FILE%" "%~f0.runfiles_manifest" "%~f0.exe.runfiles_manifest" "MANIFEST" "..\MANIFEST") do (
+    if not defined manifest_path if exist "%%~M" set "manifest_path=%%~M"
+)
 
 REM Otherwise, locate the buildifier through the runfiles manifest.
 if exist "%buildifier_path%" goto buildifier_found
@@ -24,7 +18,6 @@ if not defined manifest_path (
     echo A MANIFEST file cannot be found
     exit /b 1
 )
-
 for /F "tokens=1,* delims= " %%F IN ('findstr /l /c:"buildifier.exe" "%manifest_path%"') DO set "buildifier_path=%%G"
 
 :buildifier_found
@@ -37,9 +30,7 @@ if not exist "%buildifier_path%" (
 REM find the workspace directory in manifest.
 REM No good way in bat to read path of a symlink's target
 set "workspace_dir="
-set "workspace_file="
-if defined manifest_path for /F "tokens=1,* delims= " %%F IN ('findstr /l /c:"WORKSPACE" "%manifest_path%"') DO set "workspace_file=%%G"
-if defined workspace_file for %%I in ("%workspace_file%") do set "workspace_dir=%%~dpI"
+if defined manifest_path for /F "tokens=1,* delims= " %%F IN ('findstr /l /c:"WORKSPACE" "%manifest_path%"') DO set "workspace_dir=%%~dpG"
 
 if defined BUILD_WORKSPACE_DIRECTORY goto build_workspace
 if defined TEST_WORKSPACE goto test_workspace
@@ -48,8 +39,7 @@ exit /b 1
 
 :build_workspace
 REM Either a build, or a run/build inside a test.
-cd /d "%BUILD_WORKSPACE_DIRECTORY%"
-if errorlevel 1 exit /b 1
+cd /d "%BUILD_WORKSPACE_DIRECTORY%" || exit /b 1
 goto workspace_found
 
 :test_workspace
@@ -57,8 +47,7 @@ if not defined workspace_dir (
     set "include_reparse_points=1"
     goto workspace_found
 )
-cd /d "%workspace_dir%"
-if errorlevel 1 exit /b 1
+cd /d "%workspace_dir%" || exit /b 1
 
 :workspace_found
 REM Keep discovered paths inside PowerShell so cmd.exe never reparses them.
@@ -70,54 +59,33 @@ powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Comma
     "$buildifierArgs = @({POWERSHELL_ARGS});" ^
     "$files = @({SOURCE_FILES});" ^
     "if ({SCAN_WORKSPACE}) {" ^
-        "$workspacePrefix = (Get-Location).Path.TrimEnd([char[]]@([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar)) + [IO.Path]::DirectorySeparatorChar;" ^
+        "$workspacePrefix = (Get-Location).Path.TrimEnd([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar;" ^
         "$files = @(Get-ChildItem -LiteralPath . -Recurse -File | Where-Object {" ^
-            "($env:include_reparse_points -or -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint)) -and (" ^
-                "$_.Name -eq 'BUILD'" ^
-                "-or $_.Name -eq 'WORKSPACE'" ^
-                "-or $_.Name -eq 'WORKSPACE.bzlmod'" ^
-                "-or $_.Name -eq 'WORKSPACE.oss'" ^
-                "-or $_.Name -clike '*.bzl'" ^
-                "-or $_.Name -clike '*.sky'" ^
-                "-or $_.Name -clike '*.star'" ^
-                "-or $_.Name -clike '*.bazel'" ^
-                "-or $_.Name -clike '*.BUILD'" ^
-                "-or $_.Name -clike 'BUILD.*.oss'" ^
-                "-or $_.Name -clike 'WORKSPACE.*.oss'" ^
-            ")" ^
+            "($env:include_reparse_points -or -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint)) -and" ^
+            "$_.Name -cmatch '^(BUILD|WORKSPACE|WORKSPACE\.bzlmod|WORKSPACE\.oss|BUILD\..*\.oss|WORKSPACE\..*\.oss)$|\.(bzl|sky|star|bazel|BUILD)$'" ^
         "} | ForEach-Object { $_.FullName.Substring($workspacePrefix.Length) });" ^
     "};" ^
     "if ($files.Count -eq 0) { Write-Error 'Failed to find files to analyze'; exit 1 };" ^
+    "$jsonOutput = '{FORMAT}' -eq 'json';" ^
     "$exitCode = 0;" ^
-    "$jsonOutput = $env:BUILDIFIER_FORMAT -eq 'json';" ^
     "$jsonSuccess = $true;" ^
     "$jsonFiles = @();" ^
-    "for ($i = 0; $i -lt $files.Count;) {" ^
-        "$end = [Math]::Min($i + 99, $files.Count - 1);" ^
-        "$batch = @($files[$i..$end]);" ^
-        "$invocationArgs = @($buildifierArgs) + $batch;" ^
+    "for ($i = 0; $i -lt $files.Count; $i += 100) {" ^
+        "$batch = @($files[$i..([Math]::Min($i + 99, $files.Count - 1))]);" ^
         "if ($jsonOutput) {" ^
-            "$batchText = (& $env:BUILDIFIER_EXECUTABLE @invocationArgs) -join [Environment]::NewLine;" ^
-            "$batchExitCode = $LASTEXITCODE;" ^
-            "if ($batchExitCode -eq 0) {" ^
-                "$batchReport = $batchText | ConvertFrom-Json;" ^
+            "$batchOutput = & $env:BUILDIFIER_EXECUTABLE @buildifierArgs @batch;" ^
+            "if ($LASTEXITCODE -eq 0) {" ^
+                "$batchReport = ($batchOutput -join [Environment]::NewLine) | ConvertFrom-Json;" ^
                 "$jsonSuccess = $jsonSuccess -and [bool]$batchReport.success;" ^
                 "$jsonFiles += @($batchReport.files);" ^
             "}" ^
         "} else {" ^
-            "& $env:BUILDIFIER_EXECUTABLE @invocationArgs;" ^
-            "$batchExitCode = $LASTEXITCODE;" ^
+            "& $env:BUILDIFIER_EXECUTABLE @buildifierArgs @batch;" ^
         "};" ^
-        "if ($batchExitCode -ne 0 -and $exitCode -eq 0) { $exitCode = $batchExitCode };" ^
-        "$i = $end + 1;" ^
+        "if ($exitCode -eq 0) { $exitCode = $LASTEXITCODE };" ^
     "};" ^
     "if ($jsonOutput -and $exitCode -eq 0) {" ^
-        "$report = [ordered]@{ success = $jsonSuccess; files = [object[]]$jsonFiles };" ^
-        "if ($env:BUILDIFIER_VERBOSE -eq 'true') {" ^
-            "$report | ConvertTo-Json -Depth 10;" ^
-        "} else {" ^
-            "$report | ConvertTo-Json -Depth 10 -Compress;" ^
-        "}" ^
+        "[ordered]@{ success = $jsonSuccess; files = [object[]]$jsonFiles } | ConvertTo-Json -Depth 10 -Compress:('{VERBOSE}' -ne 'true');" ^
     "};" ^
     "exit $exitCode"
 exit /b %ERRORLEVEL%
