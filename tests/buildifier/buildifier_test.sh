@@ -105,6 +105,12 @@ buildifier(
     mode = "fix",
 )
 
+buildifier(
+    name = "buildifier.json",
+    format = "json",
+    mode = "check",
+)
+
 buildifier_test(
     name = "buildifier.test",
     srcs = [      "BUILD"      ],
@@ -123,7 +129,7 @@ EOF
 
 function create_simple_workspace() {
     buildifier_dir=$(parent_source_dir)
-    __wsdir=testws_${RANDOM}
+    __wsdir=${1:-testws_${RANDOM}}
 
     echo "create_simple_workspace in $(pwd)/${__wsdir}"
     echo "new workspace references buildifier module in ${buildifier_dir}"
@@ -150,7 +156,7 @@ function native_path() {
     path=$1
     case "$(uname -s)" in
     CYGWIN* | MINGW32* | MSYS* | MINGW*)
-        path=$(cygpath -C ANSI -w -p "$path")
+        path=$(cygpath -C ANSI -w "$path")
         path=${path//\\//}
         ;;
     esac
@@ -238,6 +244,89 @@ function assert_fix_changed_files() {
     fi
 }
 
+function create_metacharacter_fixtures() {
+    local relative_directories=(
+        'control_directory'
+        'percent_%f'
+        'percent_%value%'
+        'bang_!value!'
+        'parentheses_(value)'
+        'ampersand_&_value'
+        'caret_^_value'
+        "expression_\${a}'"
+        "expression_\${a}'/%f"
+        'parentheses_(value)/percent_%f'
+        'ampersand_&_value/bang_!value!'
+    )
+
+    local index=0
+    local relative_directory
+    for relative_directory in "${relative_directories[@]}"; do
+        ((index += 1))
+        mkdir -p "fixture/${relative_directory}"
+        cat >"fixture/${relative_directory}/BUILD.bazel" << EOF
+filegroup(
+    name="fixture_${index}",
+)
+EOF
+    done
+
+    local filename
+    for filename in foo.bazel foo.BUILD defs.star WORKSPACE.bzlmod; do
+        ((index += 1))
+        cat >"fixture/control_directory/${filename}" << EOF
+filegroup(
+    name="fixture_${index}",
+)
+EOF
+    done
+}
+
+function assert_metacharacter_fixtures_were_fixed() {
+    local build_file
+    local fixture_count=0
+    while IFS= read -r -d '' build_file; do
+        ((fixture_count += 1))
+        grep -Fq '    name = "fixture_' "${build_file}" ||
+            fail "buildifier did not fix ${build_file}"
+    done < <(find fixture -type f -print0)
+    assert_equals 15 "${fixture_count}"
+}
+
+function create_json_batch_fixtures() {
+    local index
+    mkdir -p json_fixtures
+    for ((index = 1; index <= 101; index++)); do
+        cat >"json_fixtures/fixture_${index}.bzl" << EOF
+value_${index}="needs formatting"
+EOF
+    done
+}
+
+function assert_windows_json_report() {
+    local report_path
+    report_path=$(native_path "$(realpath "$1")")
+
+    # shellcheck disable=SC2016
+    BUILDIFIER_JSON_REPORT="${report_path}" powershell.exe \
+        -NoLogo \
+        -NoProfile \
+        -NonInteractive \
+        -ExecutionPolicy Bypass \
+        -Command '
+            $report = Get-Content -Raw -LiteralPath $env:BUILDIFIER_JSON_REPORT | ConvertFrom-Json
+            if (@($report.files).Count -le 100) {
+                Write-Error "Expected more than 100 file diagnostics"
+                exit 1
+            }
+            $rooted = @($report.files | Where-Object { [IO.Path]::IsPathRooted($_.filename) })
+            if ($rooted.Count -ne 0) {
+                Write-Error "Expected workspace-relative filenames, found $($rooted[0].filename)"
+                exit 1
+            }
+        ' >>"${TEST_log}" 2>&1 || fail "buildifier output was not one valid JSON report with relative filenames"
+}
+
 function test_buildifier_test_rejects_unformatted_build() {
     local exit_code=0
 
@@ -288,6 +377,36 @@ function test_buildifier_fix_without_runfiles() {
 
     expect_log "Running command line: bazel-bin/buildifier\.check"
     assert_fix_changed_files
+}
+
+function test_buildifier_fix_handles_metacharacters() {
+    create_simple_workspace "test ws (batch) ${RANDOM}" >"${TEST_log}"
+    create_metacharacter_fixtures
+
+    local runfiles_flag
+    for runfiles_flag in --noenable_runfiles --enable_runfiles; do
+        bazel run "${runfiles_flag}" //:buildifier.fix >>"${TEST_log}" 2>&1 ||
+            fail "fix exited with non-zero code for metacharacter paths using ${runfiles_flag}"
+    done
+
+    assert_metacharacter_fixtures_were_fixed
+}
+
+function test_buildifier_json_handles_multiple_windows_batches() {
+    if ! is_windows; then
+        echo "SKIPPED windows JSON batching regression"
+        return 0
+    fi
+
+    create_simple_workspace >"${TEST_log}"
+    create_json_batch_fixtures
+
+    local runfiles_flag
+    for runfiles_flag in --noenable_runfiles --enable_runfiles; do
+        bazel run "${runfiles_flag}" //:buildifier.json >json-report 2>>"${TEST_log}" ||
+            fail "JSON check exited with non-zero code using ${runfiles_flag}"
+        assert_windows_json_report json-report
+    done
 }
 
 run_suite "buildifier suite"

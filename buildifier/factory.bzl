@@ -4,6 +4,9 @@ This module contains factory methods for simple rule and implementation generati
 
 load("@bazel_skylib//lib:shell.bzl", "shell")
 
+def _powershell_array_literal(values):
+    return ", ".join(["'%s'" % value.replace("'", "''") for value in values])
+
 def buildifier_attr_factory(*, test_rule):
     """
     Helper macro to generate a struct of attrs for use in a rule() definition.
@@ -152,10 +155,18 @@ def buildifier_impl_factory(ctx, *, test_rule):
     out_ext = ".bash" if runner.label.name.endswith(".bash.template") else ".bat"
     out_file = ctx.actions.declare_file(ctx.label.name + out_ext)
 
+    scan_workspace = not test_rule or ctx.attr.no_sandbox
+    source_files = [] if scan_workspace else [file.short_path for file in ctx.files.srcs]
+
     substitutions = {
-        "{ARGS}": shell.array_literal(args) if out_ext == ".bash" else shell.array_literal(args)[1:][:-1].replace("'", ""),
+        "{ARGS}": shell.array_literal(args),
         "{BUILDIFIER_SHORT_PATH}": shell.quote(buildifier.short_path) if out_ext == ".bash" else buildifier.short_path,
         "{EXCLUDE_PATTERNS}": exclude_patterns_str,
+        "{FORMAT}": ctx.attr.format,
+        "{POWERSHELL_ARGS}": _powershell_array_literal(args),
+        "{SCAN_WORKSPACE}": "$true" if scan_workspace else "$false",
+        "{SOURCE_FILES}": _powershell_array_literal(source_files),
+        "{VERBOSE}": str(ctx.attr.verbose).lower(),
         "{WORKSPACE}": workspace,
     }
     ctx.actions.expand_template(
