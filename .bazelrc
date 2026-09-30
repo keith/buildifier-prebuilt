@@ -32,7 +32,9 @@ test --test_output=errors --test_summary=terse
 
 # Use bzlmod
 common --enable_bzlmod
-common --module_mirrors=https://bcr.cloudflaremirrors.com
+
+# Only load the mirror config in the root workspace; examples also test Bazel 7.
+try-import %workspace%/.bazelrc.mirrors
 
 # Enable symlinks on windows
 startup --windows_enable_symlinks
