@@ -111,6 +111,12 @@ buildifier(
     mode = "check",
 )
 
+buildifier(
+    name = "buildifier.sarif",
+    format = "sarif",
+    mode = "check",
+)
+
 buildifier_test(
     name = "buildifier.test",
     srcs = [      "BUILD"      ],
@@ -407,6 +413,15 @@ function test_buildifier_json_handles_multiple_windows_batches() {
             fail "JSON check exited with non-zero code using ${runfiles_flag}"
         assert_windows_json_report json-report
     done
+}
+
+function test_buildifier_sarif_format() {
+    create_simple_workspace >"${TEST_log}"
+
+    bazel run //:buildifier.sarif >sarif-report 2>>"${TEST_log}" ||
+        fail "SARIF check exited with non-zero code"
+    grep -q '"version"' sarif-report || fail "output is not a SARIF report"
+    grep -q 'sarif' sarif-report || fail "output does not reference the SARIF schema"
 }
 
 run_suite "buildifier suite"
