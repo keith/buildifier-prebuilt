@@ -114,6 +114,7 @@ buildifier(
 buildifier(
     name = "buildifier.sarif",
     format = "sarif",
+    lint_mode = "warn",
     mode = "check",
 )
 
@@ -415,13 +416,70 @@ function test_buildifier_json_handles_multiple_windows_batches() {
     done
 }
 
+function assert_windows_sarif_report() {
+    local report_path
+    report_path=$(native_path "$(realpath "$1")")
+
+    # shellcheck disable=SC2016
+    BUILDIFIER_SARIF_REPORT="${report_path}" powershell.exe \
+        -NoLogo \
+        -NoProfile \
+        -NonInteractive \
+        -ExecutionPolicy Bypass \
+        -Command '
+            $report = Get-Content -Raw -LiteralPath $env:BUILDIFIER_SARIF_REPORT | ConvertFrom-Json
+            if (@($report.runs).Count -ne 1) {
+                Write-Error "Expected exactly one SARIF run"
+                exit 1
+            }
+            $rules = @($report.runs[0].tool.driver.rules)
+            $results = @($report.runs[0].results)
+            if ($results.Count -le 100) {
+                Write-Error "Expected more than 100 results"
+                exit 1
+            }
+            $ids = @($rules | ForEach-Object { $_.id })
+            if ($ids.Count -ne @($ids | Select-Object -Unique).Count) {
+                Write-Error "Expected unique rule ids"
+                exit 1
+            }
+            $mismatched = @($results | Where-Object { $rules[$_.ruleIndex].id -ne $_.ruleId })
+            if ($mismatched.Count -ne 0) {
+                Write-Error "ruleIndex does not match ruleId for $($mismatched[0].ruleId)"
+                exit 1
+            }
+            $rooted = @($results | Where-Object { [IO.Path]::IsPathRooted($_.locations[0].physicalLocation.artifactLocation.uri) })
+            if ($rooted.Count -ne 0) {
+                Write-Error "Expected workspace-relative uris"
+                exit 1
+            }
+        ' >>"${TEST_log}" 2>&1 || fail "buildifier output was not one valid SARIF report with consistent rules and relative uris"
+}
+
 function test_buildifier_sarif_format() {
     create_simple_workspace >"${TEST_log}"
 
     bazel run //:buildifier.sarif >sarif-report 2>>"${TEST_log}" ||
         fail "SARIF check exited with non-zero code"
-    grep -q '"version"' sarif-report || fail "output is not a SARIF report"
-    grep -q 'sarif' sarif-report || fail "output does not reference the SARIF schema"
+    grep -q '"version":"2.1.0"' sarif-report || fail "output is not a SARIF report"
+    grep -q '"uri":"./BUILD"' sarif-report || fail "deliberate buildifier issue in BUILD not reported"
+}
+
+function test_buildifier_sarif_handles_multiple_windows_batches() {
+    if ! is_windows; then
+        echo "SKIPPED windows SARIF batching regression"
+        return 0
+    fi
+
+    create_simple_workspace >"${TEST_log}"
+    create_json_batch_fixtures
+
+    local runfiles_flag
+    for runfiles_flag in --noenable_runfiles --enable_runfiles; do
+        bazel run "${runfiles_flag}" //:buildifier.sarif >sarif-report 2>>"${TEST_log}" ||
+            fail "SARIF check exited with non-zero code using ${runfiles_flag}"
+        assert_windows_sarif_report sarif-report
+    done
 }
 
 run_suite "buildifier suite"
