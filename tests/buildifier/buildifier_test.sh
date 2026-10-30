@@ -106,6 +106,16 @@ buildifier(
 )
 
 buildifier(
+    name = "buildifier.check.exclude",
+    exclude_patterns = [
+        "./.git/*",
+        "./excluded/*",
+        "./pruned_dir",
+    ],
+    mode = "diff",
+)
+
+buildifier(
     name = "buildifier.json",
     format = "json",
     mode = "check",
@@ -293,6 +303,18 @@ function assert_metacharacter_fixtures_were_fixed() {
     assert_equals 15 "${fixture_count}"
 }
 
+function create_exclude_fixtures() {
+    local fixture
+    for fixture in excluded/BUILD.bazel pruned_dir/sub/BUILD.bazel; do
+        mkdir -p "$(dirname "${fixture}")"
+        cat >"${fixture}" << EOF
+filegroup(
+    name="excluded_fixture",
+)
+EOF
+    done
+}
+
 function create_json_batch_fixtures() {
     local index
     mkdir -p json_fixtures
@@ -390,6 +412,30 @@ function test_buildifier_fix_handles_metacharacters() {
     done
 
     assert_metacharacter_fixtures_were_fixed
+}
+
+function test_buildifier_check_respects_exclude_patterns() {
+    local exit_code=0
+
+    create_simple_workspace >"${TEST_log}"
+    bazel run //:buildifier.fix >>"${TEST_log}" 2>&1 || fail "fix exited with non-zero code but should have succeeded"
+    create_exclude_fixtures
+
+    # Without the extra patterns, the fixtures are reported.
+    bazel run //:buildifier.check >unfiltered-output 2>&1 || exit_code=$?
+    cat unfiltered-output >>"${TEST_log}"
+    if [[ ${exit_code} -eq 0 ]]; then
+        fail "check exited successfully despite unformatted fixtures"
+    fi
+    grep -q "excluded" unfiltered-output || fail "fixture in excluded/ was not reported"
+    grep -q "pruned_dir" unfiltered-output || fail "fixture in pruned_dir/ was not reported"
+
+    bazel run //:buildifier.check.exclude >filtered-output 2>&1 ||
+        fail "check with exclude_patterns exited with non-zero code but should have succeeded"
+    cat filtered-output >>"${TEST_log}"
+    if grep -Eq "excluded[/\\]|pruned_dir" filtered-output; then
+        fail "files matching exclude_patterns were checked"
+    fi
 }
 
 function test_buildifier_json_handles_multiple_windows_batches() {

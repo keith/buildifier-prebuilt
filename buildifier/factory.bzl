@@ -23,7 +23,7 @@ def buildifier_attr_factory(*, test_rule):
         ),
         "exclude_patterns": attr.string_list(
             allow_empty = True,
-            doc = "A list of glob patterns passed to the find command. E.g. './vendor/*' to exclude the Go vendor directory. In test rules, this attribute requires the use of the no_sandbox attribute.",
+            doc = "A list of glob patterns matched like the find command's -path option, on all platforms. E.g. './vendor/*' to exclude the Go vendor directory. In test rules, this attribute requires the use of the no_sandbox attribute.",
         ),
         "mode": attr.string(
             default = "fix" if not test_rule else "diff",
@@ -164,6 +164,7 @@ def buildifier_impl_factory(ctx, *, test_rule):
         "{EXCLUDE_PATTERNS}": exclude_patterns_str,
         "{FORMAT}": ctx.attr.format,
         "{POWERSHELL_ARGS}": _powershell_array_literal(args),
+        "{POWERSHELL_EXCLUDE_PATTERNS}": _powershell_array_literal(ctx.attr.exclude_patterns),
         "{SCAN_WORKSPACE}": "$true" if scan_workspace else "$false",
         "{SOURCE_FILES}": _powershell_array_literal(source_files),
         "{VERBOSE}": str(ctx.attr.verbose).lower(),
