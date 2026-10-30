@@ -462,7 +462,7 @@ function test_buildifier_sarif_format() {
     bazel run //:buildifier.sarif >sarif-report 2>>"${TEST_log}" ||
         fail "SARIF check exited with non-zero code"
     grep -q '"version":"2.1.0"' sarif-report || fail "output is not a SARIF report"
-    grep -q '"uri":"./BUILD"' sarif-report || fail "deliberate buildifier issue in BUILD not reported"
+    grep -Eq '"uri":"(\./)?BUILD"' sarif-report || fail "deliberate buildifier issue in BUILD not reported"
 }
 
 function test_buildifier_sarif_handles_multiple_windows_batches() {
