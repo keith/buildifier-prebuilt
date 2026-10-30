@@ -31,8 +31,8 @@ def buildifier_attr_factory(*, test_rule):
             values = ["check", "diff", "print_if_changed"] + ["fix"] if not test_rule else [],
         ),
         "format": attr.string(
-            doc = "Dianostics format. Buildifier always returns 0 if this is set.",
-            values = ["json", "text"],
+            doc = "Diagnostics format. Buildifier always returns 0 if this is set.",
+            values = ["json", "sarif", "text"],
         ),
         "lint_mode": attr.string(
             doc = "Linting mode",

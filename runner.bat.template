@@ -54,7 +54,7 @@ REM Keep discovered paths inside PowerShell so cmd.exe never reparses them.
 REM Walk the workspace without entering excluded directories, matching each
 REM path like find's -path.
 REM Process files in batches to stay below CreateProcess' command-line limit,
-REM merging per-batch diagnostics when JSON output is requested.
+REM merging per-batch diagnostics when JSON or SARIF output is requested.
 set "BUILDIFIER_EXECUTABLE=%buildifier_path%"
 powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ^
     "$ErrorActionPreference = 'Stop';" ^
@@ -83,17 +83,37 @@ powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Comma
     "};" ^
     "if ($files.Count -eq 0) { Write-Error 'Failed to find files to analyze'; exit 1 };" ^
     "$jsonOutput = '{FORMAT}' -eq 'json';" ^
+    "$sarifOutput = '{FORMAT}' -eq 'sarif';" ^
+    "$sarifBase = $null;" ^
+    "$sarifRules = New-Object System.Collections.ArrayList;" ^
+    "$sarifRuleIndex = @{};" ^
+    "$sarifResults = New-Object System.Collections.ArrayList;" ^
     "$exitCode = 0;" ^
     "$jsonSuccess = $true;" ^
     "$jsonFiles = @();" ^
     "for ($i = 0; $i -lt $files.Count; $i += 100) {" ^
         "$batch = @($files[$i..([Math]::Min($i + 99, $files.Count - 1))]);" ^
-        "if ($jsonOutput) {" ^
+        "if ($jsonOutput -or $sarifOutput) {" ^
             "$batchOutput = & $env:BUILDIFIER_EXECUTABLE @buildifierArgs @batch;" ^
             "if ($LASTEXITCODE -eq 0) {" ^
                 "$batchReport = ($batchOutput -join [Environment]::NewLine) | ConvertFrom-Json;" ^
-                "$jsonSuccess = $jsonSuccess -and [bool]$batchReport.success;" ^
-                "$jsonFiles += @($batchReport.files);" ^
+                "if ($jsonOutput) {" ^
+                    "$jsonSuccess = $jsonSuccess -and [bool]$batchReport.success;" ^
+                    "$jsonFiles += @($batchReport.files);" ^
+                "} else {" ^
+                    "if ($null -eq $sarifBase) { $sarifBase = $batchReport };" ^
+                    "$batchRules = @($batchReport.runs[0].tool.driver.rules);" ^
+                    "foreach ($rule in $batchRules) {" ^
+                        "if (-not $sarifRuleIndex.ContainsKey($rule.id)) {" ^
+                            "[void]$sarifRules.Add($rule);" ^
+                            "$sarifRuleIndex[$rule.id] = $sarifRules.Count - 1;" ^
+                        "}" ^
+                    "};" ^
+                    "foreach ($result in @($batchReport.runs[0].results)) {" ^
+                        "$result.ruleIndex = $sarifRuleIndex[$batchRules[$result.ruleIndex].id];" ^
+                        "[void]$sarifResults.Add($result);" ^
+                    "}" ^
+                "}" ^
             "}" ^
         "} else {" ^
             "& $env:BUILDIFIER_EXECUTABLE @buildifierArgs @batch;" ^
@@ -102,6 +122,11 @@ powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Comma
     "};" ^
     "if ($jsonOutput -and $exitCode -eq 0) {" ^
         "[ordered]@{ success = $jsonSuccess; files = [object[]]$jsonFiles } | ConvertTo-Json -Depth 10 -Compress:('{VERBOSE}' -ne 'true');" ^
+    "};" ^
+    "if ($sarifOutput -and $exitCode -eq 0 -and $null -ne $sarifBase) {" ^
+        "$sarifBase.runs[0].tool.driver.rules = $sarifRules.ToArray();" ^
+        "$sarifBase.runs[0].results = $sarifResults.ToArray();" ^
+        "$sarifBase | ConvertTo-Json -Depth 20 -Compress:('{VERBOSE}' -ne 'true');" ^
     "};" ^
     "exit $exitCode"
 exit /b %ERRORLEVEL%
