@@ -149,7 +149,7 @@ def buildifier_impl_factory(ctx, *, test_rule):
         toolchain = ctx.exec_groups["test"].toolchains["@buildifier_prebuilt//buildifier:toolchain"]
     else:
         toolchain = ctx.toolchains["@buildifier_prebuilt//buildifier:toolchain"]
-    buildifier = toolchain._tool
+    buildifier = toolchain.tool
     runner = toolchain._runner
 
     out_ext = ".bash" if runner.label.name.endswith(".bash.template") else ".bat"
