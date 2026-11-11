@@ -7,7 +7,7 @@ load("@platforms//host:constraints.bzl", "HOST_CONSTRAINTS")
 
 def _buildifier_binary(ctx):
     toolchain = ctx.toolchains["@buildifier_prebuilt//buildifier:toolchain"]
-    buildifier = toolchain._tool
+    buildifier = toolchain.tool
     runner = toolchain._binary_runner
     out_ext = ".bash" if runner.label.name.endswith(".bash.template") else ".bat"
     script = ctx.actions.declare_file(ctx.label.name + out_ext)

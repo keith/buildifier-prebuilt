@@ -8,7 +8,7 @@ def _buildifier_toolchain(ctx):
     return [
         platform_common.ToolchainInfo(
             _binary_runner = ctx.attr.binary_runner,
-            _tool = ctx.executable.tool,
+            tool = ctx.executable.tool,
             _runner = ctx.attr.runner,
         ),
     ]
