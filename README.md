@@ -38,9 +38,6 @@ bazel run -- @buildifier_prebuilt//:buildozer ARGS
 bazel run -- @buildifier_prebuilt//:buildifier ARGS
 ```
 
-The Buildifier and Buildozer toolchains expose the executable for an action's
-execution platform in the `tool` field.
-
 ## Installation
 
 Check [the releases](releases) page for the latest snippet.
